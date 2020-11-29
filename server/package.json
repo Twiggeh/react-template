@@ -1,0 +1,81 @@
+{
+	"name": "server",
+	"version": "1.0.0",
+	"main": "app.js",
+	"author": "Twiggeh",
+	"type": "module",
+	"license": "MIT",
+	"scripts": {
+		"debug": "./scripts/debug.sh",
+		"start": "./scripts/build.sh"
+	},
+	"eslintConfig": {
+		"parser": "babel-eslint",
+		"env": {
+			"browser": false,
+			"es6": true,
+			"node": true
+		},
+		"extends": [
+			"eslint:recommended"
+		],
+		"globals": {
+			"Atomics": "readonly",
+			"SharedArrayBuffer": "readonly"
+		},
+		"parserOptions": {
+			"ecmaVersion": 2018,
+			"sourceType": "module"
+		},
+		"plugins": [
+			"security"
+		],
+		"rules": {
+			"indent": [
+				"error",
+				"tab",
+				{
+					"SwitchCase": 1
+				}
+			],
+			"linebreak-style": [
+				"error",
+				"unix"
+			],
+			"quotes": [
+				"error",
+				"single"
+			],
+			"semi": [
+				"error",
+				"always"
+			],
+			"flatTernaryExpressions": 0,
+			"no-unused-vars": [
+				1,
+				{
+					"vars": "all",
+					"args": "after-used",
+					"ignoreRestSiblings": false
+				}
+			]
+		},
+		"ignorePatterns": [
+			"node_modules/",
+			"public/"
+		]
+	},
+	"dependencies": {
+		"cors": "^2.8.5",
+		"dotenv": "^8.2.0",
+		"express": "^4.17.1",
+		"express-validator": "^6.6.1",
+		"mongoose": "^5.10.9",
+		"morgan": "^1.10.0"
+	},
+	"devDependencies": {
+		"babel-eslint": "^10.1.0",
+		"eslint": "^7.14.0",
+		"eslint-plugin-security": "^1.4.0"
+	}
+}

@@ -1,0 +1,35 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Launch Chrome",
+			"sourceMaps": true,
+			"outFiles": ["./client/public/js/*.js", "!**/node_modules/**"],
+			"request": "launch",
+			"type": "pwa-chrome",
+			"url": "http://localhost:5000",
+			"webRoot": "${workspaceFolder}/client",
+			"postDebugTask": "Linux kill webpack"
+		},
+		{
+			"name": "Development Backend",
+			"console": "integratedTerminal",
+			"internalConsoleOptions": "neverOpen",
+			"cwd": "${workspaceFolder}/server",
+			"request": "launch",
+			"restart": true,
+			"runtimeExecutable": "yarn",
+			"skipFiles": ["<node_internals>/**"],
+			"type": "pwa-node",
+			"runtimeArgs": ["debug"]
+		}
+	],
+	"compounds": [
+		{
+			"name": "start debug session",
+			"configurations": ["Launch Chrome", "Development Backend"],
+			"preLaunchTask": "start Webpack",
+			"stopAll": true
+		}
+	]
+}
