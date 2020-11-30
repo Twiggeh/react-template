@@ -10,6 +10,7 @@
 		"start": "./scripts/build.sh"
 	},
 	"eslintConfig": {
+		"settings": {},
 		"parser": "babel-eslint",
 		"env": {
 			"browser": false,
@@ -62,7 +63,7 @@
 		},
 		"ignorePatterns": [
 			"node_modules/",
-			"public/"
+			"dist/"
 		]
 	},
 	"dependencies": {
@@ -74,8 +75,14 @@
 		"morgan": "^1.10.0"
 	},
 	"devDependencies": {
+		"@types/cors": "^2.8.8",
+		"@types/express": "^4.17.9",
+		"@types/morgan": "^1.9.2",
+		"@types/node": "^14.14.10",
 		"babel-eslint": "^10.1.0",
 		"eslint": "^7.14.0",
-		"eslint-plugin-security": "^1.4.0"
+		"eslint-plugin-security": "^1.4.0",
+		"ts-node-dev": "^1.0.0",
+		"typescript": "^4.1.2"
 	}
 }

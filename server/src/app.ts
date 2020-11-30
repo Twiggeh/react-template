@@ -64,7 +64,7 @@ app.use(
 		origin: (origin, cb) => {
 			if (!allowedOrigins.includes(origin)) {
 				const msg = `The CORS policy doesn't allow access from ${origin}.`;
-				return cb(msg, false);
+				return cb(msg as any, false);
 			}
 			return cb(null, true);
 		},

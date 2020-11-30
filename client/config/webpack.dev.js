@@ -20,8 +20,9 @@ module.exports = {
 	mode: 'development',
 	module: {
 		rules: [
+			{ test: /\.tsx?$/, loader: 'ts-loader' },
 			{
-				test: /\.(js|jsx)$/,
+				test: /\.js/,
 				exclude: /node_modules/,
 				loader: 'babel-loader',
 				options: {
@@ -126,7 +127,7 @@ module.exports = {
 			pictures: path.resolve(curProcess, './src/static/Pictures.js'),
 		},
 		modules: ['src', 'node_modules'],
-		extensions: ['*', '.js', '.jsx'],
+		extensions: ['.ts', '.tsx', '.js', '.jsx'],
 	},
 	node: { __dirname: true, __filename: true }, // to get correct __dirname and __filename
 	// prettier-ignore

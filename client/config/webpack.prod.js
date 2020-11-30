@@ -35,8 +35,9 @@ module.exports = {
 	mode: 'production',
 	module: {
 		rules: [
+			{ test: /\.tsx?$/, loader: 'ts-loader' },
 			{
-				test: /\.(js|jsx)$/,
+				test: /\.js$/,
 				exclude: /node_modules/,
 				loader: 'babel-loader',
 				options: {
@@ -154,7 +155,7 @@ module.exports = {
 			pictures: path.resolve(curProcess, './src/static/Pictures.js'),
 		},
 		modules: ['src', 'node_modules'],
-		extensions: ['*', '.js', '.jsx'],
+		extensions: ['.ts', '.tsx', '.js', '.jsx'],
 	},
 	optimization: {
 		minimizer: [new OptimizeCssAssetsPlugin()],
