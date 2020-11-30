@@ -62,7 +62,8 @@
 		},
 		"ignorePatterns": [
 			"node_modules/",
-			"public/"
+			"public/",
+			"dist"
 		]
 	},
 	"dependencies": {
