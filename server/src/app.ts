@@ -7,6 +7,7 @@ import http from 'http';
 import { config } from 'dotenv';
 import { createWriteStream, readFileSync } from 'fs';
 import morgan from 'morgan';
+import { URL } from 'url';
 config();
 
 const SECURE_PORT = 8081;
@@ -23,6 +24,7 @@ const domain = process.env.DOMAIN ? process.env.DOMAIN : 'localhost';
 const subDom = process.env.SUBDOMAIN ? process.env.SUBDOMAIN : '';
 const domExt = process.env.DOMAIN_EXTENSION ? process.env.DOMAIN_EXTENSION : '';
 const hostname = [subDom, domain, domExt].filter(c => !!c).join('.');
+const rootDir = resolve(process.env.SERVER_DIR, '../');
 
 const app = express();
 
@@ -40,7 +42,8 @@ const logger = morgan(':time :url :method :remote-addr :user-agent :response-tim
 app.disable('x-powered-by');
 
 const allowedOrigins = [`https://${hostname}`];
-if (!isProd) allowedOrigins.push('http://localhost:5000', 'http://127.0.0.1:5000');
+if (!isProd)
+	allowedOrigins.push('http://localhost:5000', 'http://127.0.0.1:5000', undefined);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -81,11 +84,11 @@ if (isProd) {
 }
 
 app.get('/public/*', (req, res) => {
-	res.sendFile(resolve(cwd(), join('../client', 'dist', req.url)));
+	res.sendFile(join(rootDir, 'client', 'dist', req.url));
 });
 
 app.get('*', (req, res) => {
-	res.sendFile(resolve(cwd(), '../client', 'dist', 'index.html'));
+	res.sendFile(join(rootDir, 'client', 'dist', 'index.html'));
 });
 
 if (isProd) {

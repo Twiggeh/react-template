@@ -12,22 +12,28 @@
 			"postDebugTask": "Linux kill webpack"
 		},
 		{
-			"name": "Development Backend",
-			"console": "integratedTerminal",
-			"internalConsoleOptions": "neverOpen",
+			"name": "Start TSC",
 			"cwd": "${workspaceFolder}/server",
 			"request": "launch",
-			"restart": true,
 			"runtimeExecutable": "yarn",
 			"skipFiles": ["<node_internals>/**"],
 			"type": "pwa-node",
 			"runtimeArgs": ["debug"]
+		},
+		{
+			"name": "Development Backend",
+			"cwd": "${workspaceFolder}/server",
+			"restart": true,
+			"request": "launch",
+			"type": "pwa-node",
+			"runtimeExecutable": "nodemon",
+			"runtimeArgs": ["--inspect-brk", "./dist/app.js"]
 		}
 	],
 	"compounds": [
 		{
 			"name": "start debug session",
-			"configurations": ["Launch Chrome", "Development Backend"],
+			"configurations": ["Launch Chrome", "Start TSC", "Development Backend"],
 			"preLaunchTask": "start Webpack",
 			"stopAll": true
 		}

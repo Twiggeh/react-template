@@ -178,7 +178,9 @@ module.exports = {
 				analyzerMode: 'server',
 			})
 			: false,
-		new UglifyJSPlugin(),
+		// Find a new minifier, uglify js doesn't support es6 syntax, which is what ts compiles down to
+		// alternatively set a different js version with babel
+		//new UglifyJSPlugin(),
 		new MiniCssExtractPlugin({
 			filename: 'public/css/[name]-[contenthash:8].css',
 			chunkFilename: 'public/css/[name]-[contenthash:8].chunk.css',
