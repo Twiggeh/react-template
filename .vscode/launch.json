@@ -27,7 +27,7 @@
 			"request": "launch",
 			"type": "pwa-node",
 			"runtimeExecutable": "nodemon",
-			"runtimeArgs": ["--inspect-brk", "./dist/app.js"]
+			"runtimeArgs": ["--inspect-brk", "./dist/src/app.js"]
 		}
 	],
 	"compounds": [

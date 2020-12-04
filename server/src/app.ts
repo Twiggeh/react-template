@@ -8,7 +8,9 @@ import { config } from 'dotenv';
 import { createWriteStream, readFileSync } from 'fs';
 import morgan from 'morgan';
 import { URL } from 'url';
+import { sayHello } from '../Models/SayHello.js';
 config();
+sayHello();
 
 const SECURE_PORT = 8081;
 const UPGRADE_PORT = 8080;
