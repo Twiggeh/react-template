@@ -1,0 +1,20 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill='none'>
+	<line
+  	x1='2.52952'
+		y1='2.52943'
+		x2='36.4706'
+		y2='36.4706'
+		stroke="white"
+		stroke-width="3"
+    strokeLinecap="round"
+	/>
+	<line
+		x1='36.4707'
+		y1='2.52943'
+		x2='2.52958'
+		y2='36.4706'
+		stroke="white"
+		stroke-width="3"
+     strokeLinecap="round"
+	/>
+</svg>
