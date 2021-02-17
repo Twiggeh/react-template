@@ -8,6 +8,7 @@
 		"debug": "node ./scripts/debug.js",
 		"build": "node ./scripts/build.js",
 		"analyze": "./scripts/analyze.sh",
+		"cypress:open": "cypress open",
 		"gql:codegen": "graphql-codegen --config ./config/gql.yml"
 	},
 	"eslintConfig": {

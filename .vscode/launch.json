@@ -67,7 +67,6 @@
 			"console": "integratedTerminal",
 			"program": "${workspaceFolder}/client/scripts/debug.js",
 			"request": "launch",
-			"autoAttachChildProcesses": false,
 			"runtimeExecutable": "node",
 			"skipFiles": ["<node_internals>/**"],
 			"type": "pwa-node"
@@ -83,6 +82,7 @@
 				//"TSC Compiler Server",
 				//"Development Backend"
 			],
+			//	"preLaunchTask": "start Webpack",
 			"stopAll": true
 		}
 	]

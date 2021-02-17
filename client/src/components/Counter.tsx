@@ -5,10 +5,10 @@ const Counter: React.FC = () => {
 	const [counter, setCounter] = useState(0);
 	return (
 		<StyledCounter>
-			<StyledCounterDisplay>Current Count is: {counter}</StyledCounterDisplay>
+			<StyledCounterDisplay>Current count : {counter}</StyledCounterDisplay>
 			<div>
-				<CounterButton onClick={() => setCounter(c => c + 0)}>+</CounterButton>
-				<CounterButton onClick={() => setCounter(c => c - 0)}>-</CounterButton>
+				<CounterButton onClick={() => setCounter(c => c + 1)}>+</CounterButton>
+				<CounterButton onClick={() => setCounter(c => c - 1)}>-</CounterButton>
 			</div>
 		</StyledCounter>
 	);
