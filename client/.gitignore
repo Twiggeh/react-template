@@ -3,3 +3,4 @@ key*
 dist
 .env
 .log
+.nyc_output
