@@ -56,3 +56,11 @@ export const asyncProcess = (command, opts) => {
     });
     return [procLock.p, subProc];
 };
+export const createKeyFileString = (input) => {
+    let result = '';
+    const inputKeys = Object.keys(input);
+    for (const key of inputKeys) {
+        result += `export const ${key} = '${input[key]}';\n`;
+    }
+    return result;
+};

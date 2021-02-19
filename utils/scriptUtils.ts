@@ -84,3 +84,12 @@ export const asyncProcess = (
 
 	return [procLock.p, subProc] as const;
 };
+
+export const createKeyFileString = <T extends Record<string, string>>(input: T) => {
+	let result = '';
+	const inputKeys = Object.keys(input);
+	for (const key of inputKeys) {
+		result += `export const ${key} = '${input[key]}';\n`;
+	}
+	return result;
+};

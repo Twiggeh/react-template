@@ -6,19 +6,22 @@
 	"type": "module",
 	"license": "MIT",
 	"scripts": {
-		"debug": "./scripts/debug.sh",
-		"start": "./scripts/build.sh"
+		"debug": "node ./scripts/debug.js",
+		"start": "node ./scripts/build.js",
+		"gql:codegen": "graphql-codegen --config ./config/gqlgen.yml"
 	},
 	"eslintConfig": {
-		"settings": {},
-		"parser": "babel-eslint",
+		"parser": "@typescript-eslint/parser",
 		"env": {
 			"browser": false,
 			"es6": true,
 			"node": true
 		},
 		"extends": [
-			"eslint:recommended"
+			"eslint:recommended",
+			"plugin:react/recommended",
+			"plugin:security/recommended",
+			"plugin:@typescript-eslint/recommended"
 		],
 		"globals": {
 			"Atomics": "readonly",
@@ -33,7 +36,7 @@
 		],
 		"rules": {
 			"indent": [
-				"error",
+				"off",
 				"tab",
 				{
 					"SwitchCase": 1
@@ -52,37 +55,51 @@
 				"always"
 			],
 			"flatTernaryExpressions": 0,
-			"no-unused-vars": [
-				1,
-				{
-					"vars": "all",
-					"args": "after-used",
-					"ignoreRestSiblings": false
-				}
-			]
+			"react-hooks/rules-of-hooks": "error",
+			"react-hooks/exhaustive-deps": "warn",
+			"react/prop-types": 0,
+			"no-unused-vars": "off",
+			"no-var": "off",
+			"@typescript-eslint/explicit-module-boundary-types": "off"
 		},
 		"ignorePatterns": [
 			"node_modules/",
-			"dist/"
+			"public/"
 		]
 	},
 	"dependencies": {
+		"apollo-server-express": "^2.21.0",
+		"bcrypt": "^5.0.0",
+		"connect-mongodb-session": "^2.4.1",
 		"cors": "^2.8.5",
 		"dotenv": "^8.2.0",
 		"express": "^4.17.1",
-		"express-validator": "^6.6.1",
-		"mongoose": "^5.10.9",
-		"morgan": "^1.10.0"
+		"express-session": "^1.17.1",
+		"express-validator": "^6.9.2",
+		"grant": "^5.4.9",
+		"graphql": "^15.5.0",
+		"graphql-upload": "^11.0.0",
+		"mongoose": "^5.11.17",
+		"morgan": "^1.10.0",
+		"node-fetch": "^2.6.1"
 	},
 	"devDependencies": {
-		"@types/cors": "^2.8.8",
-		"@types/express": "^4.17.9",
+		"@graphql-codegen/cli": "^1.20.1",
+		"@graphql-codegen/typescript": "^1.21.0",
+		"@graphql-codegen/typescript-mongodb": "^1.18.0",
+		"@graphql-codegen/typescript-resolvers": "^1.18.2",
+		"@types/bcrypt": "^3.0.0",
+		"@types/connect-mongodb-session": "^2.4.0",
+		"@types/cors": "^2.8.10",
+		"@types/express": "^4.17.11",
+		"@types/express-session": "^1.17.3",
+		"@types/graphql-upload": "^8.0.4",
+		"@types/mongoose": "^5.10.3",
 		"@types/morgan": "^1.9.2",
-		"@types/node": "^14.14.10",
+		"@types/node": "^14.14.28",
 		"babel-eslint": "^10.1.0",
-		"eslint": "^7.14.0",
+		"eslint": "^7.20.0",
 		"eslint-plugin-security": "^1.4.0",
-		"ts-node-dev": "^1.0.0",
-		"typescript": "^4.1.2"
+		"typescript": "^4.1.5"
 	}
 }
