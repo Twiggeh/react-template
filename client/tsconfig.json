@@ -1,0 +1,28 @@
+{
+	"compilerOptions": {
+		"target": "esnext",
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"types": [
+			"cypress",
+			"cypress-react-selector",
+			"node",
+			"@emotion/react/types/css-prop"
+		],
+		"allowJs": true,
+		"skipLibCheck": true,
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+		"strict": true,
+		"module": "esnext",
+		"moduleResolution": "node",
+		"resolveJsonModule": true,
+		"sourceMap": true,
+		"jsx": "preserve",
+		"strictNullChecks": true,
+		"noEmit": false,
+		"typeRoots": ["@types"],
+		"baseUrl": ".",
+		"removeComments": true
+	},
+	"exclude": ["./node_modules", "./dist", "./src/index.js", "./scripts", "./config"]
+}

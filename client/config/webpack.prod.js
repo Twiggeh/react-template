@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const process = require('process');
 require('dotenv').config();
@@ -12,11 +13,10 @@ const webpack = require('webpack');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 console.log(mode);
-const curProcess = process.cwd();
 
 module.exports = {
 	entry: {
-		main: path.resolve(curProcess, 'src/index.js'),
+		main: path.resolve(__dirname, '../src/index.js'),
 		vendor: [
 			'react',
 			'react-dom',
@@ -27,7 +27,7 @@ module.exports = {
 		],
 	},
 	output: {
-		path: path.resolve(curProcess, './dist'),
+		path: path.resolve(__dirname, '../dist'),
 		publicPath: '/',
 		filename: 'public/js/[name]-[contentHash:8].js',
 		chunkFilename: 'public/js/[name]-[contentHash:8].chunk.js',
@@ -36,18 +36,47 @@ module.exports = {
 	module: {
 		rules: [
 			{
-				test: /\.(js|jsx)$/,
+				test: /\.tsx?$/,
 				exclude: /node_modules/,
+				use: [
+					{
+						loader: 'babel-loader',
+						options: {
+							presets: [
+								'@babel/preset-env',
+								'@babel/react',
+								'@emotion/babel-preset-css-prop',
+							],
+							// don't inject babel code into each file, create a global import for them
+							plugins: ['@babel/plugin-transform-runtime'],
+							compact: false,
+							cacheDirectory: false,
+							cacheCompression: false,
+							sourceMaps: false,
+							inputSourceMap: false,
+						},
+					},
+					{ loader: 'ts-loader' },
+				],
+			},
+			{
+				test: /\.jsx?$/,
 				loader: 'babel-loader',
+				exclude: /node_modules/,
+				include: /src/,
 				options: {
-					presets: ['@babel/preset-react'],
+					presets: [
+						'@babel/preset-env',
+						'@babel/react',
+						'@emotion/babel-preset-css-prop',
+					],
 					// don't inject babel code into each file, create a global import for them
 					plugins: ['@babel/plugin-transform-runtime'],
 					compact: false,
-					cacheDirectory: true,
+					cacheDirectory: false,
 					cacheCompression: false,
-					sourceMaps: true,
-					inputSourceMap: true,
+					sourceMaps: false,
+					inputSourceMap: false,
 				},
 			},
 			{
@@ -110,16 +139,6 @@ module.exports = {
 					},
 				},
 			},
-			//	{
-			//		test: /\.html?$/,
-			//		use: {
-			//			loader: 'file-loader',
-			//			options: {
-			//				name: '[name].[ext]',
-			//				outputPath: 'webpages',
-			//			},
-			//		},
-			//	},
 			{
 				test: /\.pdf$/,
 				use: {
@@ -149,12 +168,12 @@ module.exports = {
 	},
 	resolve: {
 		alias: {
-			icons: path.resolve(curProcess, './src/assets/icons'),
-			assets: path.resolve(curProcess, './src/assets'),
-			pictures: path.resolve(curProcess, './src/static/Pictures.js'),
+			icons: path.resolve(__dirname, '../src/assets/icons'),
+			assets: path.resolve(__dirname, '../src/assets'),
+			pictures: path.resolve(__dirname, '../src/static/Pictures.js'),
 		},
 		modules: ['src', 'node_modules'],
-		extensions: ['*', '.js', '.jsx'],
+		extensions: ['.ts', '.tsx', '.js', '.jsx'],
 	},
 	optimization: {
 		minimizer: [new OptimizeCssAssetsPlugin()],
@@ -177,18 +196,20 @@ module.exports = {
 				analyzerMode: 'server',
 			})
 			: false,
-		new UglifyJSPlugin(),
+		// Find a new minifier, uglify js doesn't support es6 syntax, which is what ts compiles down to
+		// alternatively set a different js version with babel
+		//new UglifyJSPlugin(),
 		new MiniCssExtractPlugin({
 			filename: 'public/css/[name]-[contenthash:8].css',
 			chunkFilename: 'public/css/[name]-[contenthash:8].chunk.css',
 		}),
 		new HtmlWebpackPlugin({
-			template: path.resolve(curProcess, 'src/index.html'),
+			template: path.resolve(__dirname, '../src/index.html'),
 			filename: 'index.html',
 		}),
 		new CleanWebpackPlugin(),
 		new webpack.DefinePlugin({
-			MY_VARIABLES: JSON.stringify('Must stringify a String, don\'t ask me why.')
+			BACKEND_SERVER_URL: JSON.stringify(process.env.BACKEND_URL),
 		})
 	].filter(Boolean),
 };

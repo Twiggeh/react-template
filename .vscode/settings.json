@@ -1,3 +1,10 @@
 {
-	"eslint.workingDirectories": ["server", "client"]
+	"eslint.workingDirectories": ["server", "client"],
+	"typescript.tsdk": "./client/node_modules/typescript/lib",
+	"cSpell.words": [
+    "ccss",
+    "codegen",
+    "fullchain",
+    "privkey"
+  ]
 }

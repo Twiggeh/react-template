@@ -1,0 +1,9 @@
+{
+	"type": "module",
+	"scripts": {
+		"postinstall": "node ./scripts/setup.js"
+	},
+	"devDependencies": {
+		"@types/node": "^14.14.28"
+	}
+}
