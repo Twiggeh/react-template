@@ -249,7 +249,7 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 
 		console.log('GQL Types for the client have been generated.');
 	} catch (e) {
-		console.log("Couldn't generate servers' gql types");
+		console.log("Couldn't generate clients' gql types");
 		console.error(e);
 	}
 	console.log('Attempting to close the server now since all types have been built ...');
