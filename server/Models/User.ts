@@ -22,7 +22,7 @@ interface UserGoogle {
 	accessToken: string;
 	refreshToken: string;
 	email: string;
-	google_Id: string;
+	google_id: string;
 }
 
 interface UserGoogleDocument extends UserGoogle, mongoose.Document {}
@@ -72,7 +72,7 @@ UserSchema.pre<UserDocument>('save', async function (next) {
 
 	if (
 		google &&
-		(!google.accessToken || !google.refreshToken || !google.email || !google.google_Id)
+		(!google.accessToken || !google.refreshToken || !google.email || !google.google_id)
 	)
 		errors.push(
 			`Not all google relevant data has been provided :
@@ -94,7 +94,7 @@ UserSchema.pre<UserDocument>('save', async function (next) {
 			const document = await User.find({
 				$or: [
 					{ 'local.email': this.local!.email },
-					{ 'google.id': this.google!.google_Id },
+					{ 'google.id': this.google!.google_id },
 				],
 			});
 			if (document.length)
@@ -111,7 +111,7 @@ UserSchema.pre<UserDocument>('save', async function (next) {
 		}
 
 		case 'google': {
-			const document = await User.find({ 'google.id': this.google!.google_Id });
+			const document = await User.find({ 'google.id': this.google!.google_id });
 			if (document.length) throw `User with email ${this.google!.email} already exists.`;
 			break;
 		}

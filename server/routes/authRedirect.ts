@@ -55,7 +55,7 @@ router.get('/google*', async (req: AuthReq, res) => {
 					userName: googleUserData.name,
 					google: {
 						email: googleUserData.email,
-						id: googleUserData.id,
+						google_id: googleUserData.id,
 						refreshToken: refresh_token,
 						accessToken: access_token,
 					},
