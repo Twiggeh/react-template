@@ -1,4 +1,5 @@
 import { gql } from 'apollo-server-express';
+import { AddUserType } from './AddUserType.js';
 import { UploadFileType } from './UploadFileType.js';
 
 const typeDefs = gql`
@@ -11,6 +12,7 @@ const typeDefs = gql`
 		_empty: String
 	}
 	${UploadFileType}
+	${AddUserType}
 `;
 
 export default typeDefs;
