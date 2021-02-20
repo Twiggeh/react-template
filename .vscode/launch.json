@@ -78,9 +78,9 @@
 			"configurations": [
 				"Start Webpack",
 				"Launch Chrome",
-				"TSC Watcher Client"
-				//"TSC Compiler Server",
-				//"Development Backend"
+				"TSC Watcher Client",
+				"TSC Compiler Server",
+				"Development Backend"
 			],
 			//	"preLaunchTask": "start Webpack",
 			"stopAll": true
