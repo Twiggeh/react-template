@@ -7,13 +7,13 @@ import { processParams } from './processParameters.js';
 const __dirname = decodeURI(dirname(new URL(import.meta.url).pathname));
 
 const defaultBuildCfg = {
-	domain: 'localhost',
-	domainExt: '',
-	subDomain: '',
+	domain: 'changeMe',
+	domainExt: 'com',
+	subDomain: 'www',
 	securePort: '8080',
 	insecurePort: '8081',
 	devPort: '5050',
-	backendProtocol: 'http',
+	backendProtocol: 'https',
 };
 
 const {
@@ -48,8 +48,8 @@ addEnvContent(`INSECURE_PORT="${insecurePort}"`);
 addEnvContent(`BACKEND_PROTOCOL="${backendProtocol}"`);
 
 // DIRECTORIES
-mkdirSync(join(__dirname, '..', 'public/uploads'), { recursive: true });
-mkdirSync(join(__dirname, '..', 'dist/public/uploads'), { recursive: true });
+mkdirSync(join(__dirname, '../public/uploads'), { recursive: true });
+mkdirSync(join(__dirname, '../dist/public/uploads'), { recursive: true });
 
 // Write env file
 writeFileSync(join(__dirname, '../.env'), envFileContent);
