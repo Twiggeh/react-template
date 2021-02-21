@@ -1,13 +1,21 @@
 /* Contents
- * 1. Template Dependency Installation
- * 2. Creating Required Files
- * 3. Type Generation GQL
+ * 1. Template Dependency Installation (download dependencies from npm)
+ * 2. Creating Required Server Files   (key files, ssl certificates)
+ * 3. Setting Up Dev Environment       (custom local domain resolution)
+ * 4. Type Generation GQL              (build types from gql schema for server and client)
  */
 
-import { chmodSync, existsSync, mkdirSync, writeFileSync } from 'fs';
+import { existsSync } from 'fs';
 import { dirname, join } from 'path';
 import { URL } from 'url';
-import { asyncProcess, useReadLine, createKeyFileString } from '../utils/scriptUtils.js';
+import {
+	asyncProcess,
+	useReadLine,
+	createKeyFileString,
+	parseHosts,
+} from '../utils/scriptUtils.js';
+
+import { writeFile, chmod, mkdir, readFile } from 'fs/promises';
 
 const __dirname = decodeURI(dirname(new URL(import.meta.url).pathname));
 const asyncReadLine = useReadLine(process.stdin, process.stdout);
@@ -39,15 +47,18 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 		console.error(e);
 	}
 
-	// ===================================
-	// ===== Creating Required Files =====
-	// ===================================
+	// ==========================================
+	// ===== Creating Required Server Files =====
+	// ==========================================
 
 	console.log('Starting Template Servers Setup ...');
 
 	// Write all required keys
-	if (!existsSync(join(__dirname, '../server/keys/keys.ts'))) {
-		mkdirSync(join(__dirname, '../server/keys'), { recursive: true });
+	try {
+		if (existsSync(join(__dirname, '../server/keys/keys.ts')))
+			throw 'Keyfile already exists';
+
+		await mkdir(join(__dirname, '../server/keys'), { recursive: true });
 
 		const variables = {
 			mongooseKey: '',
@@ -100,14 +111,16 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 		}
 		console.log('Writing keys ...');
 
-		writeFileSync(
+		await writeFile(
 			join(__dirname, '../server/keys/keys.ts'),
 			createKeyFileString(variables)
 		);
 		console.log('Written key file.');
+	} catch (e) {
+		console.error('Could not create key file');
+		console.error(e);
 	}
-
-	// Create SSL Certificates
+	// Write SSL Certificates
 
 	const setupSSLKey = async (
 		input: string,
@@ -137,16 +150,16 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 		const keyFileLocationPermission = 700;
 
 		console.log(`Writing ${keyFileName} ...`);
-		mkdirSync(keyFileLocation);
-		writeFileSync(keyFilePath, input);
+		await mkdir(keyFileLocation);
+		await writeFile(keyFilePath, input);
 		console.log(`Wrote ${keyFileName}, updating permissions of ${keyFileName}`);
 
-		chmodSync(keyFileLocation, keyFileLocationPermission);
+		await chmod(keyFileLocation, keyFileLocationPermission);
 		console.log(
 			`Set the permissions for the cert folder to ${keyFileLocationPermission}`
 		);
 
-		chmodSync(keyFilePath, keyFilePermission);
+		await chmod(keyFilePath, keyFilePermission);
 		console.log(
 			`Set the permissions for the (${keyFileName}) ssl key to ${keyFilePermission}`
 		);
