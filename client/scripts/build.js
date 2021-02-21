@@ -2,12 +2,10 @@ import { writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { URL } from 'url';
 import { asyncProcess } from '../../utils/scriptUtils.js';
+import { defaultBuildCfg } from './defaultParams.js';
 import { processParams } from './parseParams.js';
 const __dirname = decodeURI(dirname(new URL(import.meta.url).pathname));
-const defaultDebugCfg = {
-    backendUrl: 'http://localhost:5050',
-};
-const { backendUrl } = processParams(process.argv, defaultDebugCfg);
+const { backendUrl } = processParams(process.argv, defaultBuildCfg);
 let envFileContent = '';
 const addEnvContent = (newContent) => void (envFileContent += newContent + '\n');
 // Set all environment variables, then run nodemon
