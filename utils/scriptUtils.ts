@@ -1,6 +1,13 @@
 import { spawn, SpawnOptionsWithoutStdio } from 'child_process';
 import { createInterface } from 'readline';
 
+export const parseHosts = (input: string): [ip: string, hostname: string][] => {
+	const regex = /(?<=(\n|^))([\w.:]*)\s*([\w- ]*)/g;
+	const matches = [...input.matchAll(regex)];
+
+	return matches.map(([, , ip, hostname]) => [ip, hostname]);
+};
+
 type OptionalFNParam<T, R> = T extends undefined ? (argO?: never) => R : (arg0: T) => R;
 
 interface Lock<Resolve, Reject> {

@@ -1,5 +1,10 @@
 import { spawn } from 'child_process';
 import { createInterface } from 'readline';
+export const parseHosts = (input) => {
+    const regex = /(?<=(\n|^))([\w.:]*)\s*([\w- ]*)/g;
+    const matches = [...input.matchAll(regex)];
+    return matches.map(([, , ip, hostname]) => [ip, hostname]);
+};
 export const createLock = () => {
     const lock = {};
     lock.p = new Promise((res, rej) => {
