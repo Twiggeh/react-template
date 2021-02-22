@@ -31,6 +31,8 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 			cwd: join(__dirname, '../client'),
 			shell: true,
 		})[0];
+		console.log('Installed Client Deps ...');
+		console.clear();
 	} catch (e) {
 		console.error('Could not install client dependencies.');
 		console.error(e);
@@ -42,6 +44,8 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 			cwd: join(__dirname, '../server'),
 			shell: true,
 		})[0];
+		console.log('Installed Server Deps ...');
+		console.clear();
 	} catch (e) {
 		console.error('Could not install server dependencies.');
 		console.error(e);
@@ -82,12 +86,14 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 		}
 		// Google Keys
 		try {
+			console.clear();
 			console.log(
 				'You can create an Google Application here : (https://console.developers.google.com/apis/credentials)'
 			);
 			variables.googleSecret = await asyncReadLine(
 				'Please provide the Google Secret for the Template:'
 			);
+			console.clear();
 			variables.googleKey = await asyncReadLine(
 				'Please provide the Google Key for for the Template:'
 			);
@@ -98,6 +104,7 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 		}
 		// Session secret
 		try {
+			console.clear();
 			console.log(
 				'You can create a random key on this website, set the length to ~80 : (https://passwordsgenerator.net/)'
 			);
@@ -166,6 +173,7 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 	};
 
 	try {
+		console.clear();
 		if (!existsSync(join(__dirname, '../server/cert/fullchain.pem'))) {
 			console.log("Couldn't find the fullchain.pem.");
 			console.log(
@@ -175,6 +183,7 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 				"If you don't need ssl just press enter, otherwise paste the key"
 			);
 			await setupSSLKey(input);
+			console.clear();
 		}
 	} catch (e) {
 		console.log('Did not create a fullchain.pem');
@@ -182,6 +191,7 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 	}
 
 	try {
+		console.clear();
 		if (!existsSync(join(__dirname, '../server/cert/privkey.pem'))) {
 			console.log("Couldn't find the privkey.pem");
 			console.log(
@@ -192,6 +202,7 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 			);
 			await setupSSLKey(input);
 		}
+		console.clear();
 	} catch (e) {
 		console.log('Did not create a privkey.pem');
 		console.log(e);
