@@ -37,17 +37,16 @@
 			"type": "node-terminal"
 		},
 		{
-			"name": "Run Setup",
-			"console": "integratedTerminal",
-			"internalConsoleOptions": "neverOpen",
-			"program": "${workspaceFolder}/scripts/setup.js",
-			"cwd": "${workspaceFolder}",
+			"windows": {
+				"command": "runas /noprofile /user:Administrator node ${workspaceFolder}/scripts/setup.js"
+			},
+			"linux": {
+				"command": "sudo node ${workspaceFolder}/scripts/setup.js"
+			},
+			"name": "Start Setup",
 			"request": "launch",
-			"restart": true,
-			"runtimeExecutable": "node",
-			"skipFiles": ["<node_internals>/**"],
-			"runtimeArgs": ["--inspect-brk"],
-			"type": "pwa-node"
+			"type": "node-terminal",
+			"skipFiles": ["<node_internals>/**"]
 		},
 		{
 			"name": "Build Scripts",

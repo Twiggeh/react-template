@@ -5,6 +5,7 @@
     "ccss",
     "codegen",
     "fullchain",
-    "privkey"
+    "privkey",
+    "runas"
   ]
 }
