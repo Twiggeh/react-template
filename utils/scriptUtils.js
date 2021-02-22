@@ -1,4 +1,6 @@
 import { spawn } from 'child_process';
+import { chmod, mkdir, writeFile } from 'fs/promises';
+import { join } from 'path';
 import { createInterface } from 'readline';
 export const parseHosts = (input) => {
     const regex = /(?<=(\n|^))([\w.:]*)\s*([\w- ]*)/g;
@@ -68,4 +70,33 @@ export const createKeyFileString = (input) => {
         result += `export const ${key} = '${input[key]}';\n`;
     }
     return result;
+};
+export const setupSSLKey = async (input, keyFileLocation, keyFileName) => {
+    input = input.trim();
+    const type = input.startsWith('-----BEGIN CERTIFICATE-----') &&
+        input.endsWith('-----END CERTIFICATE-----')
+        ? 'fullchain'
+        : input.startsWith('-----BEGIN PRIVATE KEY-----') &&
+            input.endsWith('-----END PRIVATE KEY-----')
+            ? 'privkey'
+            : 'bad input';
+    if (type === 'bad input')
+        throw 'Bad input, not writing key. If you need ssl, please put the keys under server/cert/privkey.pem and server/cert/fullchain.pem.\n Do not forget that the folder needs to have be chmoded to 700, the privkey needs to be chmoded to 600 and the fullchain needs to be chmoded to 644 for the server to work. ';
+    keyFileLocation === undefined
+        ? (keyFileLocation = join(__dirname, '../server/cert/'))
+        : keyFileLocation;
+    keyFileName === undefined
+        ? (keyFileName = type === 'fullchain' ? 'fullchain.pem' : 'privkey.pem')
+        : keyFileName;
+    const keyFilePath = join(keyFileLocation, keyFileName);
+    const keyFilePermission = type === 'fullchain' ? 644 : 600;
+    const keyFileLocationPermission = 700;
+    console.log(`Writing ${keyFileName} ...`);
+    await mkdir(keyFileLocation);
+    await writeFile(keyFilePath, input);
+    console.log(`Wrote ${keyFileName}, updating permissions of ${keyFileName}`);
+    await chmod(keyFileLocation, keyFileLocationPermission);
+    console.log(`Set the permissions for the cert folder to ${keyFileLocationPermission}`);
+    await chmod(keyFilePath, keyFilePermission);
+    console.log(`Set the permissions for the (${keyFileName}) ssl key to ${keyFilePermission}`);
 };

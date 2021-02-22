@@ -7,8 +7,8 @@
 import { existsSync } from 'fs';
 import { dirname, join } from 'path';
 import { URL } from 'url';
-import { asyncProcess, useReadLine, createKeyFileString, parseHosts, } from '../utils/scriptUtils.js';
-import { writeFile, chmod, mkdir, readFile } from 'fs/promises';
+import { asyncProcess, useReadLine, createKeyFileString, parseHosts, setupSSLKey, } from '../utils/scriptUtils.js';
+import { writeFile, mkdir, readFile } from 'fs/promises';
 const __dirname = decodeURI(dirname(new URL(import.meta.url).pathname));
 const asyncReadLine = useReadLine(process.stdin, process.stdout);
 (async () => {
@@ -99,35 +99,6 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
         console.error(e);
     }
     // Write SSL Certificates
-    const setupSSLKey = async (input, keyFileLocation, keyFileName) => {
-        input = input.trim();
-        const type = input.startsWith('-----BEGIN CERTIFICATE-----') &&
-            input.endsWith('-----END CERTIFICATE-----')
-            ? 'fullchain'
-            : input.startsWith('-----BEGIN PRIVATE KEY-----') &&
-                input.endsWith('-----END PRIVATE KEY-----')
-                ? 'privkey'
-                : 'bad input';
-        if (type === 'bad input')
-            throw 'Bad input, not writing key. If you need ssl, please put the keys under server/cert/privkey.pem and server/cert/fullchain.pem.\n Do not forget that the folder needs to have be chmoded to 700, the privkey needs to be chmoded to 600 and the fullchain needs to be chmoded to 644 for the server to work. ';
-        keyFileLocation === undefined
-            ? (keyFileLocation = join(__dirname, '../server/cert/'))
-            : keyFileLocation;
-        keyFileName === undefined
-            ? (keyFileName = type === 'fullchain' ? 'fullchain.pem' : 'privkey.pem')
-            : keyFileName;
-        const keyFilePath = join(keyFileLocation, keyFileName);
-        const keyFilePermission = type === 'fullchain' ? 644 : 600;
-        const keyFileLocationPermission = 700;
-        console.log(`Writing ${keyFileName} ...`);
-        await mkdir(keyFileLocation);
-        await writeFile(keyFilePath, input);
-        console.log(`Wrote ${keyFileName}, updating permissions of ${keyFileName}`);
-        await chmod(keyFileLocation, keyFileLocationPermission);
-        console.log(`Set the permissions for the cert folder to ${keyFileLocationPermission}`);
-        await chmod(keyFilePath, keyFilePermission);
-        console.log(`Set the permissions for the (${keyFileName}) ssl key to ${keyFilePermission}`);
-    };
     try {
         console.clear();
         if (!existsSync(join(__dirname, '../server/cert/fullchain.pem'))) {
