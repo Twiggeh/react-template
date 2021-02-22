@@ -208,6 +208,101 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 		console.log(e);
 	}
 
+	// ======================================
+	// ===== Setting Up Dev Environment =====
+	// ======================================
+
+	try {
+		console.clear();
+		let inputCorrect = false;
+		let setupDevUrl = false;
+		do {
+			const createHostname = (
+				await asyncReadLine(
+					`Do you want to setup a custom development domain ? - This will only affect your local development environment.
+
+For this to work you need to run this process as admin, if you didn't just exit the process and restart it with: 
+(linux : sudo node ./setup.js, windows: runas /user:”your_computer_name\administrator_name” node ./setup.js)
+
+(y/n)
+`
+				)
+			).trim();
+			switch (createHostname) {
+				case 'y':
+				case 'Y':
+				case 'Yes':
+					inputCorrect = true;
+					setupDevUrl = true;
+					break;
+				case 'n':
+				case 'N':
+				case 'No':
+					inputCorrect = true;
+					break;
+				default:
+					break;
+			}
+		} while (!inputCorrect);
+
+		if (!setupDevUrl)
+			throw "User doesn't want to setup a dev url, dev url will be localhost";
+
+		let hostsFile: string;
+		let hostsFilePath: string;
+
+		const winHostsFilePath = 'C:/Windows/System32/drivers/etc/hosts';
+		const linHostsFilePath = '/etc/hosts';
+
+		switch (process.platform) {
+			case 'win32':
+				hostsFile = (await readFile(winHostsFilePath)).toString();
+				hostsFilePath = winHostsFilePath;
+				break;
+			case 'linux': {
+				hostsFile = (await readFile(linHostsFilePath)).toString();
+				hostsFilePath = linHostsFilePath;
+				break;
+			}
+			default:
+				throw `Operating System: ${process.platform} not supported.`;
+		}
+		if (hostsFile === undefined || linHostsFilePath === undefined)
+			throw 'Either empty hosts-file or could not find hosts file. You will have to change it manually yourself.';
+
+		const hostFileData = parseHosts(hostsFile);
+
+		console.log("These are your hostfile's contents :\n");
+		console.log(hostsFile + '\n');
+
+		const usersHostname = (
+			await asyncReadLine('Please type in your desired hostname: ')
+		).trim();
+
+		const ipToAssign = '127.0.0.1';
+
+		const identicalHostEntryExists = hostFileData.reduce((acc, [ip, rawHostname]) => {
+			for (const hostname of rawHostname.split(' ')) {
+				if (hostname === usersHostname && ip.trim() === ipToAssign) return true;
+			}
+			return acc;
+		}, false);
+
+		if (identicalHostEntryExists)
+			throw 'Identical Hosts entry already exists, skipping ...';
+
+		const hostEntry = `\n${ipToAssign}  ${usersHostname}`;
+		console.log(`Trying to write ${hostEntry} to the hosts file`);
+
+		await writeFile(hostsFilePath, hostEntry, { flag: 'a' });
+
+		console.log('Wrote successfully');
+		console.clear();
+	} catch (e) {
+		console.error(e);
+		console.error('Was not able to setup dev url');
+	}
+
 	console.log('Configuration of the template completed');
 
 	// ================================
@@ -219,6 +314,7 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 	console.log('Generating types for graphql ...');
 
 	console.log('Building the development server ...');
+
 	try {
 		await asyncProcess('yarn debug', {
 			shell: true,

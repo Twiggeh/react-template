@@ -1,12 +1,14 @@
 /* Contents
- * 1. Template Dependency Installation
- * 2. Creating Required Files
- * 3. Type Generation GQL
+ * 1. Template Dependency Installation (download dependencies from npm)
+ * 2. Creating Required Server Files   (key files, ssl certificates)
+ * 3. Setting Up Dev Environment       (custom local domain resolution)
+ * 4. Type Generation GQL              (build types from gql schema for server and client)
  */
-import { chmodSync, existsSync, mkdirSync, writeFileSync } from 'fs';
+import { existsSync } from 'fs';
 import { dirname, join } from 'path';
 import { URL } from 'url';
-import { asyncProcess, useReadLine, createKeyFileString } from '../utils/scriptUtils.js';
+import { asyncProcess, useReadLine, createKeyFileString, parseHosts, } from '../utils/scriptUtils.js';
+import { writeFile, chmod, mkdir, readFile } from 'fs/promises';
 const __dirname = decodeURI(dirname(new URL(import.meta.url).pathname));
 const asyncReadLine = useReadLine(process.stdin, process.stdout);
 (async () => {
@@ -19,6 +21,8 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
             cwd: join(__dirname, '../client'),
             shell: true,
         })[0];
+        console.log('Installed Client Deps ...');
+        console.clear();
     }
     catch (e) {
         console.error('Could not install client dependencies.');
@@ -30,18 +34,22 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
             cwd: join(__dirname, '../server'),
             shell: true,
         })[0];
+        console.log('Installed Server Deps ...');
+        console.clear();
     }
     catch (e) {
         console.error('Could not install server dependencies.');
         console.error(e);
     }
-    // ===================================
-    // ===== Creating Required Files =====
-    // ===================================
+    // ==========================================
+    // ===== Creating Required Server Files =====
+    // ==========================================
     console.log('Starting Template Servers Setup ...');
     // Write all required keys
-    if (!existsSync(join(__dirname, '../server/keys/keys.ts'))) {
-        mkdirSync(join(__dirname, '../server/keys'), { recursive: true });
+    try {
+        if (existsSync(join(__dirname, '../server/keys/keys.ts')))
+            throw 'Keyfile already exists';
+        await mkdir(join(__dirname, '../server/keys'), { recursive: true });
         const variables = {
             mongooseKey: '',
             googleSecret: '',
@@ -60,8 +68,10 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
         }
         // Google Keys
         try {
+            console.clear();
             console.log('You can create an Google Application here : (https://console.developers.google.com/apis/credentials)');
             variables.googleSecret = await asyncReadLine('Please provide the Google Secret for the Template:');
+            console.clear();
             variables.googleKey = await asyncReadLine('Please provide the Google Key for for the Template:');
             console.clear();
         }
@@ -71,6 +81,7 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
         }
         // Session secret
         try {
+            console.clear();
             console.log('You can create a random key on this website, set the length to ~80 : (https://passwordsgenerator.net/)');
             variables.sessionSecret = await asyncReadLine('Please Provide a key to encrypt the Imgur Clone Sessions with (any random string) :');
             console.clear();
@@ -80,10 +91,14 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
             console.error(e);
         }
         console.log('Writing keys ...');
-        writeFileSync(join(__dirname, '../server/keys/keys.ts'), createKeyFileString(variables));
+        await writeFile(join(__dirname, '../server/keys/keys.ts'), createKeyFileString(variables));
         console.log('Written key file.');
     }
-    // Create SSL Certificates
+    catch (e) {
+        console.error('Could not create key file');
+        console.error(e);
+    }
+    // Write SSL Certificates
     const setupSSLKey = async (input, keyFileLocation, keyFileName) => {
         input = input.trim();
         const type = input.startsWith('-----BEGIN CERTIFICATE-----') &&
@@ -105,20 +120,22 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
         const keyFilePermission = type === 'fullchain' ? 644 : 600;
         const keyFileLocationPermission = 700;
         console.log(`Writing ${keyFileName} ...`);
-        mkdirSync(keyFileLocation);
-        writeFileSync(keyFilePath, input);
+        await mkdir(keyFileLocation);
+        await writeFile(keyFilePath, input);
         console.log(`Wrote ${keyFileName}, updating permissions of ${keyFileName}`);
-        chmodSync(keyFileLocation, keyFileLocationPermission);
+        await chmod(keyFileLocation, keyFileLocationPermission);
         console.log(`Set the permissions for the cert folder to ${keyFileLocationPermission}`);
-        chmodSync(keyFilePath, keyFilePermission);
+        await chmod(keyFilePath, keyFilePermission);
         console.log(`Set the permissions for the (${keyFileName}) ssl key to ${keyFilePermission}`);
     };
     try {
+        console.clear();
         if (!existsSync(join(__dirname, '../server/cert/fullchain.pem'))) {
             console.log("Couldn't find the fullchain.pem.");
             console.log('If you are only going to run the server in http debug mode, you will not need this ssl key.');
             const input = await asyncReadLine("If you don't need ssl just press enter, otherwise paste the key");
             await setupSSLKey(input);
+            console.clear();
         }
     }
     catch (e) {
@@ -126,16 +143,94 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
         console.log(e);
     }
     try {
+        console.clear();
         if (!existsSync(join(__dirname, '../server/cert/privkey.pem'))) {
             console.log("Couldn't find the privkey.pem");
             console.log('If you are only going to run the server in http debug mode, you will not need this ssl key.');
             const input = await asyncReadLine("If you don't need ssl just press enter, otherwise paste the key");
             await setupSSLKey(input);
         }
+        console.clear();
     }
     catch (e) {
         console.log('Did not create a privkey.pem');
         console.log(e);
+    }
+    // ======================================
+    // ===== Setting Up Dev Environment =====
+    // ======================================
+    try {
+        console.clear();
+        let inputCorrect = false;
+        let setupDevUrl = false;
+        do {
+            const createHostname = (await asyncReadLine(`Do you want to setup a custom development domain ? - This will only affect your local development environment.
+
+For this to work you need to run this process as admin, if you didn't just exit the process and restart it with: 
+(linux : sudo node ./setup.js, windows: runas /user:”your_computer_name\administrator_name” node ./setup.js)
+
+(y/n)
+`)).trim();
+            switch (createHostname) {
+                case 'y':
+                case 'Y':
+                case 'Yes':
+                    inputCorrect = true;
+                    setupDevUrl = true;
+                    break;
+                case 'n':
+                case 'N':
+                case 'No':
+                    inputCorrect = true;
+                    break;
+                default:
+                    break;
+            }
+        } while (!inputCorrect);
+        if (!setupDevUrl)
+            throw "User doesn't want to setup a dev url, dev url will be localhost";
+        let hostsFile;
+        let hostsFilePath;
+        const winHostsFilePath = 'C:/Windows/System32/drivers/etc/hosts';
+        const linHostsFilePath = '/etc/hosts';
+        switch (process.platform) {
+            case 'win32':
+                hostsFile = (await readFile(winHostsFilePath)).toString();
+                hostsFilePath = winHostsFilePath;
+                break;
+            case 'linux': {
+                hostsFile = (await readFile(linHostsFilePath)).toString();
+                hostsFilePath = linHostsFilePath;
+                break;
+            }
+            default:
+                throw `Operating System: ${process.platform} not supported.`;
+        }
+        if (hostsFile === undefined || linHostsFilePath === undefined)
+            throw 'Either empty hosts-file or could not find hosts file. You will have to change it manually yourself.';
+        const hostFileData = parseHosts(hostsFile);
+        console.log("These are your hostfile's contents :\n");
+        console.log(hostsFile + '\n');
+        const usersHostname = (await asyncReadLine('Please type in your desired hostname: ')).trim();
+        const ipToAssign = '127.0.0.1';
+        const identicalHostEntryExists = hostFileData.reduce((acc, [ip, rawHostname]) => {
+            for (const hostname of rawHostname.split(' ')) {
+                if (hostname === usersHostname && ip.trim() === ipToAssign)
+                    return true;
+            }
+            return acc;
+        }, false);
+        if (identicalHostEntryExists)
+            throw 'Identical Hosts entry already exists, skipping ...';
+        const hostEntry = `\n${ipToAssign}  ${usersHostname}`;
+        console.log(`Trying to write ${hostEntry} to the hosts file`);
+        await writeFile(hostsFilePath, hostEntry, { flag: 'a' });
+        console.log('Wrote successfully');
+        console.clear();
+    }
+    catch (e) {
+        console.error(e);
+        console.error('Was not able to setup dev url');
     }
     console.log('Configuration of the template completed');
     // ================================
