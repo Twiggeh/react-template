@@ -27,6 +27,13 @@ const emptyEqualVals = (key: string, obj1: object, obj2: object) => {
 	return false;
 };
 
+const anyNonFalsyUserResponse: Parameters<
+	typeof yesNoQuestion
+>[2]['validateFn'] = userInput => {
+	const falsy = ['n', 'no', 'N', 'No'];
+	return [userInput.length > 0, !falsy.includes(userInput)];
+};
+
 (async () => {
 	// ============================================
 	// ===== Template Dependency Installation =====
@@ -80,7 +87,7 @@ const emptyEqualVals = (key: string, obj1: object, obj2: object) => {
 		mongoSessionCollectionName: 'sessions',
 		googleSecret: '',
 		googleKey: '',
-		sessionSecret: '',
+		sessionSecret: '1234',
 	};
 
 	// @ts-ignore
@@ -121,10 +128,7 @@ const emptyEqualVals = (key: string, obj1: object, obj2: object) => {
 			asyncReadLine,
 			{
 				ignoreDefaultValidation: true,
-				validateFn: userInput => {
-					const falsy = ['n', 'no', 'N', 'No'];
-					return [userInput.length > 0, !falsy.includes(userInput)];
-				},
+				validateFn: anyNonFalsyUserResponse,
 			}
 		);
 
@@ -177,15 +181,21 @@ const emptyEqualVals = (key: string, obj1: object, obj2: object) => {
 		console.clear();
 		if (dontReadKey(keys.sessionSecret)) throw 'Session Secret already set, Skipping ...';
 
-		console.log(
-			'You can create a random key on this website, set the length to ~80 : (https://passwordsgenerator.net/)'
+		const [writeSessionSecret, sessionSecret] = await yesNoQuestion(
+			`Would you like to change the default cookie session secret (${keys.sessionSecret}) ?
+Any random string will do - you can create ono on this website (not recommended for production runs) : set the length to ~80 : (https://passwordsgenerator.net/)
+(n / pasteSessionSecret)
+`,
+			asyncReadLine,
+			{ validateFn: anyNonFalsyUserResponse }
 		);
-		keys.sessionSecret = await asyncReadLine(
-			'Please Provide a key to encrypt the Imgur Clone Sessions with (any random string) :'
-		);
+
+		if (!writeSessionSecret) throw 'Keeping default value.';
+
+		keys.sessionSecret = sessionSecret;
 		console.clear();
 	} catch (e) {
-		console.log('Failed to read sessionSecret');
+		console.log('Failed to update sessionSecret');
 		console.error(e);
 	}
 
