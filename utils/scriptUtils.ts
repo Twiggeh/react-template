@@ -143,3 +143,67 @@ export const setupSSLKey = async (
 		`Set the permissions for the (${keyFileName}) ssl key to ${keyFilePermission}`
 	);
 };
+
+type YesNoQuestion = (
+	question: string,
+	asyncReadLine: ReturnType<typeof useReadLine>,
+	options?: {
+		validateFn?: (userInput: string) => [proceed: boolean, userAgreed: boolean];
+		ignoreDefaultValidation?: boolean;
+		truthyValidators?: string[];
+		falsyValidators?: string[];
+	}
+) => Promise<[userAgreed: boolean, userInput: string]>;
+
+export const yesNoQuestion: YesNoQuestion = async (
+	question,
+	asyncReadLine,
+	{ validateFn, ignoreDefaultValidation, truthyValidators, falsyValidators } = {}
+) => {
+	let proceed = false,
+		userAgreed = false,
+		userInput: string;
+
+	do {
+		userInput = (await asyncReadLine(question)).trim();
+		if (!ignoreDefaultValidation)
+			switch (userInput) {
+				case 'y':
+				case 'ye':
+				case 'yes':
+				case 'Y':
+				case 'Ye':
+				case 'Yes':
+					proceed = true;
+					userAgreed = true;
+					break;
+				case 'n':
+				case 'no':
+				case 'N':
+				case 'No':
+					proceed = true;
+					break;
+				default:
+					break;
+			}
+
+		if (falsyValidators)
+			for (const validator of falsyValidators) {
+				if (userInput !== validator.trim()) break;
+				proceed = true;
+			}
+
+		if (truthyValidators)
+			for (const validator of falsyValidators) {
+				if (userInput !== validator.trim()) break;
+				proceed = true;
+				userAgreed = true;
+			}
+
+		if (validateFn) {
+			[userAgreed, proceed] = validateFn(userInput);
+		}
+	} while (!proceed);
+
+	return [userAgreed, userInput];
+};

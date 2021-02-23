@@ -14,6 +14,7 @@ import {
 	createKeyFileString,
 	parseHosts,
 	setupSSLKey,
+	yesNoQuestion,
 } from '../utils/scriptUtils.js';
 
 import { writeFile, mkdir, readFile } from 'fs/promises';
@@ -172,36 +173,19 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 
 	try {
 		console.clear();
-		let inputCorrect = false;
-		let setupDevUrl = false;
-		do {
-			const createHostname = (
-				await asyncReadLine(
-					`Do you want to setup a custom development domain ? - This will only affect your local development environment.
+
+		const setupDevUrl = (
+			await yesNoQuestion(
+				`Do you want to setup a custom development domain ? - This will only affect your local development environment.
 
 For this to work you need to run this process as admin, if you didn't just exit the process and restart it with: 
 (linux : sudo node ./setup.js, windows: runas /user:”your_computer_name\administrator_name” node ./setup.js)
 
 (y/n)
-`
-				)
-			).trim();
-			switch (createHostname) {
-				case 'y':
-				case 'Y':
-				case 'Yes':
-					inputCorrect = true;
-					setupDevUrl = true;
-					break;
-				case 'n':
-				case 'N':
-				case 'No':
-					inputCorrect = true;
-					break;
-				default:
-					break;
-			}
-		} while (!inputCorrect);
+`,
+				asyncReadLine
+			)
+		)[0];
 
 		if (!setupDevUrl)
 			throw "User doesn't want to setup a dev url, dev url will be localhost";
