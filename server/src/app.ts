@@ -11,7 +11,7 @@ import morgan from 'morgan';
 import { URL } from 'url';
 import mongoose from 'mongoose';
 import { ApolloServer } from 'apollo-server-express';
-import session from 'express-session';
+import session, { MemoryStore } from 'express-session';
 import MongoDBStoreConstructor from 'connect-mongodb-session';
 import grant from 'grant';
 import { graphqlUploadExpress } from 'graphql-upload';
@@ -63,14 +63,17 @@ app.use(
 			maxAge: 1000 * 60 * 60 * 24 * 7,
 			sameSite: 'lax',
 		},
-		store: new MongoDBStore({
-			uri: mongooseKey,
-			collection: 'sessions',
-			connectionOptions: {
-				useNewUrlParser: true,
-				useUnifiedTopology: true,
-			},
-		}),
+		store:
+			mongooseKey === ''
+				? new MemoryStore()
+				: new MongoDBStore({
+						uri: mongooseKey,
+						collection: 'sessions',
+						connectionOptions: {
+							useNewUrlParser: true,
+							useUnifiedTopology: true,
+						},
+				  }),
 	})
 );
 
@@ -163,18 +166,20 @@ app.use((req, res, next) => {
 });
 
 // Connect to database
-try {
-	(async (): Promise<void> => {
+(async (): Promise<void> => {
+	try {
+		if (mongooseKey === '') throw 'Not Connecting to Mongoose, mongooseKey is empty';
+
 		await mongoose.connect(mongooseKey, {
 			useNewUrlParser: true,
 			useUnifiedTopology: true,
 			useFindAndModify: false,
 		});
-	})();
-} catch (e) {
-	console.error('Mongoose failed to connect');
-	console.error(e);
-}
+	} catch (e) {
+		console.error('Mongoose failed to connect');
+		console.error(e);
+	}
+})();
 
 // Redirect http to https
 if (isProd) {
