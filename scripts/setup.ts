@@ -65,70 +65,131 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 			throw 'Keyfile already exists';
 
 		await mkdir(join(__dirname, '../server/keys'), { recursive: true });
-
-		const variables = {
-			mongooseKey: '',
-			googleSecret: '',
-			googleKey: '',
-			sessionSecret: '',
-		};
-
-		// Mongoose Key
-		try {
-			console.log(
-				'You can create a free Account here : (https://account.mongodb.com/account/login)'
-			);
-			variables.mongooseKey = await asyncReadLine(
-				'Please provide the connection URI for the MongoDB database (mongodb+srv://<Username>:<Password>@...) :'
-			);
-			console.clear();
-		} catch (e) {
-			console.log('Failed to read mongooseKey');
-			console.error(e);
-		}
-		// Google Keys
-		try {
-			console.clear();
-			console.log(
-				'You can create an Google Application here : (https://console.developers.google.com/apis/credentials)'
-			);
-			variables.googleSecret = await asyncReadLine(
-				'Please provide the Google Secret for the Template:'
-			);
-			console.clear();
-			variables.googleKey = await asyncReadLine(
-				'Please provide the Google Key for for the Template:'
-			);
-			console.clear();
-		} catch (e) {
-			console.log('Failed to read googleSecret or googleKey');
-			console.error(e);
-		}
-		// Session secret
-		try {
-			console.clear();
-			console.log(
-				'You can create a random key on this website, set the length to ~80 : (https://passwordsgenerator.net/)'
-			);
-			variables.sessionSecret = await asyncReadLine(
-				'Please Provide a key to encrypt the Imgur Clone Sessions with (any random string) :'
-			);
-			console.clear();
-		} catch (e) {
-			console.log('Failed to read sessionSecret');
-			console.error(e);
-		}
-		console.log('Writing keys ...');
-
-		await writeFile(
-			join(__dirname, '../server/keys/keys.ts'),
-			createKeyFileString(variables)
-		);
-		console.log('Written key file.');
 	} catch (e) {
 		console.error('Could not create key file');
 		console.error(e);
 	}
+
+	const keys = {
+		mongooseKey: '',
+		mongoSessionCollectionName: 'sessions',
+		googleSecret: '',
+		googleKey: '',
+		sessionSecret: '',
+	};
+
+	// @ts-ignore
+	const existingKeys: typeof keys = await import('../server/keys/keys.js');
+
+	for (const objKey in existingKeys) {
+		const existingKey = existingKeys[objKey];
+		keys[objKey] = existingKey;
+	}
+
+	// Mongoose Key
+	try {
+		console.clear();
+		if (keys.mongooseKey) throw 'Mongoose Key already present, Skipping ...';
+
+		console.log(
+			'You can create a free Account here : (https://account.mongodb.com/account/login)'
+		);
+		keys.mongooseKey = await asyncReadLine(
+			'Please provide the connection URI for the MongoDB database (mongodb+srv://<Username>:<Password>@...) :'
+		);
+		console.clear();
+	} catch (e) {
+		console.log('Failed to read mongooseKeys');
+		console.error(e);
+	}
+
+	try {
+		console.clear();
+		if (keys.mongoSessionCollectionName)
+			throw 'Session Collection Name present, Skipping ...';
+
+		const [writeSessionName, sessionName] = await yesNoQuestion(
+			`Would you like to change the default collection (${keys.mongoSessionCollectionName}) where your sessions are going to be stored under ?
+(n / typeInTheSessionCollectionName)`,
+			asyncReadLine,
+			{
+				ignoreDefaultValidation: true,
+				validateFn: userInput => {
+					const falsy = ['n', 'no', 'N', 'No'];
+					return [userInput.length > 0, !falsy.includes(userInput)];
+				},
+			}
+		);
+
+		if (writeSessionName) keys.mongoSessionCollectionName = sessionName;
+
+		console.clear();
+	} catch (e) {
+		console.log('Failed to read Session Name');
+		console.error(e);
+	}
+
+	// Google Keys
+	try {
+		console.clear();
+		if (existingKeys.googleSecret) throw 'Google Secret already exists, Skipping ...';
+
+		console.log(
+			'You can create an Google Application here : (https://console.developers.google.com/apis/credentials)'
+		);
+
+		keys.googleSecret = await asyncReadLine(
+			'Please provide the Google Secret for the Template:'
+		);
+	} catch (e) {
+		console.log('Failed to read googleSecret');
+		console.error(e);
+	}
+
+	try {
+		console.clear();
+		if (existingKeys.googleKey) throw 'Google Secret already exists, Skipping ...';
+
+		console.log(
+			'You can create an Google Application here : (https://console.developers.google.com/apis/credentials)'
+		);
+
+		keys.googleKey = await asyncReadLine(
+			'Please provide the Google Key for for the Template:'
+		);
+		console.clear();
+	} catch (e) {
+		console.log('Failed to read googleKey');
+		console.error(e);
+	}
+
+	// Session secret
+
+	try {
+		console.clear();
+		if (existingKeys.sessionSecret) throw 'Session Secret already exists, Skipping ...';
+
+		console.log(
+			'You can create a random key on this website, set the length to ~80 : (https://passwordsgenerator.net/)'
+		);
+		keys.sessionSecret = await asyncReadLine(
+			'Please Provide a key to encrypt the Imgur Clone Sessions with (any random string) :'
+		);
+		console.clear();
+	} catch (e) {
+		console.log('Failed to read sessionSecret');
+		console.error(e);
+	}
+
+	try {
+		console.log('Writing keys ...');
+		await writeFile(join(__dirname, '../server/keys/keys.ts'), createKeyFileString(keys));
+		console.log('Written key file.');
+	} catch (e) {
+		console.error(e);
+		console.error('Could not write to key-file.');
+	}
+
 	// Write SSL Certificates
 
 	try {
