@@ -22,6 +22,11 @@ import { writeFile, mkdir, readFile } from 'fs/promises';
 const __dirname = decodeURI(dirname(new URL(import.meta.url).pathname));
 const asyncReadLine = useReadLine(process.stdin, process.stdout);
 
+const emptyEqualVals = (key: string, obj1: object, obj2: object) => {
+	if (!obj1[key] && obj1[key] === obj2[key]) return true;
+	return false;
+};
+
 (async () => {
 	// ============================================
 	// ===== Template Dependency Installation =====
@@ -86,10 +91,12 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 		keys[objKey] = existingKey;
 	}
 
+	const dontReadKey = (key: string) => !emptyEqualVals(key, keys, existingKeys);
+
 	// Mongoose Key
 	try {
 		console.clear();
-		if (keys.mongooseKey) throw 'Mongoose Key already present, Skipping ...';
+		if (dontReadKey(keys.mongooseKey)) throw 'Mongoose Key already present, Skipping ...';
 
 		console.log(
 			'You can create a free Account here : (https://account.mongodb.com/account/login)'
@@ -105,7 +112,7 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 
 	try {
 		console.clear();
-		if (keys.mongoSessionCollectionName)
+		if (dontReadKey(keys.mongoSessionCollectionName))
 			throw 'Session Collection Name present, Skipping ...';
 
 		const [writeSessionName, sessionName] = await yesNoQuestion(
@@ -132,7 +139,8 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 	// Google Keys
 	try {
 		console.clear();
-		if (existingKeys.googleSecret) throw 'Google Secret already exists, Skipping ...';
+		if (dontReadKey(keys.googleSecret))
+			throw 'Google Secret already exists, Skipping ...';
 
 		console.log(
 			'You can create an Google Application here : (https://console.developers.google.com/apis/credentials)'
@@ -148,7 +156,7 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 
 	try {
 		console.clear();
-		if (existingKeys.googleKey) throw 'Google Secret already exists, Skipping ...';
+		if (dontReadKey(keys.googleKey)) throw 'Google Secret already exists, Skipping ...';
 
 		console.log(
 			'You can create an Google Application here : (https://console.developers.google.com/apis/credentials)'
@@ -167,7 +175,7 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
 
 	try {
 		console.clear();
-		if (existingKeys.sessionSecret) throw 'Session Secret already exists, Skipping ...';
+		if (dontReadKey(keys.sessionSecret)) throw 'Session Secret already set, Skipping ...';
 
 		console.log(
 			'You can create a random key on this website, set the length to ~80 : (https://passwordsgenerator.net/)'
