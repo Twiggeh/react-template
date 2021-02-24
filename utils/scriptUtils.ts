@@ -194,14 +194,14 @@ export const yesNoQuestion: YesNoQuestion = async (
 			}
 
 		if (truthyValidators)
-			for (const validator of falsyValidators) {
+			for (const validator of truthyValidators) {
 				if (userInput !== validator.trim()) break;
 				proceed = true;
 				userAgreed = true;
 			}
 
 		if (validateFn) {
-			[userAgreed, proceed] = validateFn(userInput);
+			[proceed, userAgreed] = validateFn(userInput);
 		}
 	} while (!proceed);
 

@@ -100,3 +100,46 @@ export const setupSSLKey = async (input, keyFileLocation, keyFileName) => {
     await chmod(keyFilePath, keyFilePermission);
     console.log(`Set the permissions for the (${keyFileName}) ssl key to ${keyFilePermission}`);
 };
+export const yesNoQuestion = async (question, asyncReadLine, { validateFn, ignoreDefaultValidation, truthyValidators, falsyValidators } = {}) => {
+    let proceed = false, userAgreed = false, userInput;
+    do {
+        userInput = (await asyncReadLine(question)).trim();
+        if (!ignoreDefaultValidation)
+            switch (userInput) {
+                case 'y':
+                case 'ye':
+                case 'yes':
+                case 'Y':
+                case 'Ye':
+                case 'Yes':
+                    proceed = true;
+                    userAgreed = true;
+                    break;
+                case 'n':
+                case 'no':
+                case 'N':
+                case 'No':
+                    proceed = true;
+                    break;
+                default:
+                    break;
+            }
+        if (falsyValidators)
+            for (const validator of falsyValidators) {
+                if (userInput !== validator.trim())
+                    break;
+                proceed = true;
+            }
+        if (truthyValidators)
+            for (const validator of truthyValidators) {
+                if (userInput !== validator.trim())
+                    break;
+                proceed = true;
+                userAgreed = true;
+            }
+        if (validateFn) {
+            [proceed, userAgreed] = validateFn(userInput);
+        }
+    } while (!proceed);
+    return [userAgreed, userInput];
+};
