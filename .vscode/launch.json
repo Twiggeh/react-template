@@ -43,6 +43,7 @@
 			"linux": {
 				"command": "sudo node ${workspaceFolder}/scripts/setup.js"
 			},
+			"command": "sudo node ${workspaceFolder}/scripts/setup.js",
 			"name": "Start Setup",
 			"request": "launch",
 			"type": "node-terminal",
