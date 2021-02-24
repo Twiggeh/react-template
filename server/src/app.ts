@@ -30,7 +30,7 @@ import resolvers from '../gql/resolvers.js';
 // Routes
 import Auth_Redirect from '../routes/authRedirect.js';
 import { AuthReq, MyContext } from '../@types/global.js';
-import { createUriWithCollectionName } from 'utils/utils.js';
+import { createUriWithCollectionName } from '../utils/utils.js';
 
 config();
 
