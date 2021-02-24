@@ -205,9 +205,15 @@ Any random string will do - you can create ono on this website (not recommended 
 	}
 
 	try {
-		console.log('Writing keys ...');
-		await writeFile(join(__dirname, '../server/keys/keys.ts'), createKeyFileString(keys));
-		console.log('Written key file.');
+		console.log('Writing key files ...');
+		const writtenFiles = await Promise.allSettled([
+			writeFile(join(__dirname, '../server/keys/keys.ts'), createKeyFileString(keys)),
+			writeFile(join(__dirname, '../server/keys/keys.js'), createKeyFileString(keys)),
+		]);
+		for (const result of writtenFiles) {
+			if (result.status === 'rejected') throw 'Failed to write a file';
+		}
+		console.log('Written key files.');
 	} catch (e) {
 		console.error(e);
 		console.error('Could not write to key-file.');
