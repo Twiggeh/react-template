@@ -82,7 +82,8 @@ const anyNonFalsyUserResponse: Parameters<
 		console.error(e);
 	}
 
-	const keys = {
+	// default key values
+	const defaultKeys = {
 		mongooseKey: '',
 		mongoSessionCollectionName: 'sessions',
 		googleSecret: '',
@@ -91,14 +92,18 @@ const anyNonFalsyUserResponse: Parameters<
 	};
 
 	// @ts-ignore
-	const existingKeys: typeof keys = await import('../server/keys/keys.js');
+	const imported_keys: typeof defaultKeys = await import('../server/keys/keys.js');
+	// @ts-ignore
+	const keys: typeof defaultKeys = {};
 
-	for (const objKey in existingKeys) {
-		const existingKey = existingKeys[objKey];
-		keys[objKey] = existingKey;
+	// Override empty / non existing keys with default values
+	for (const key in defaultKeys) {
+		const keyValue = imported_keys[key];
+		if (!keyValue) keys[key] = defaultKeys[key];
+		keys[key] = keyValue;
 	}
 
-	const dontReadKey = (key: string) => !emptyEqualVals(key, keys, existingKeys);
+	const dontReadKey = (key: string) => !emptyEqualVals(key, keys, defaultKeys);
 
 	// Mongoose Key
 	try {
