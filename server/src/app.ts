@@ -17,13 +17,20 @@ import grant from 'grant';
 import { graphqlUploadExpress } from 'graphql-upload';
 
 // JS Files
-import { googleKey, googleSecret, mongooseKey, sessionSecret } from '../keys/keys.js';
+import {
+	googleKey,
+	googleSecret,
+	mongooseKey,
+	sessionSecret,
+	mongoSessionCollectionName,
+} from '../keys/keys.js';
 import typeDefs from '../gql/types.js';
 import resolvers from '../gql/resolvers.js';
 
 // Routes
 import Auth_Redirect from '../routes/authRedirect.js';
 import { AuthReq, MyContext } from '../@types/global.js';
+import { createUriWithCollectionName } from 'utils/utils.js';
 
 config();
 
@@ -67,7 +74,7 @@ app.use(
 			mongooseKey === ''
 				? new MemoryStore()
 				: new MongoDBStore({
-						uri: mongooseKey,
+						uri: createUriWithCollectionName(mongooseKey, mongoSessionCollectionName),
 						collection: 'sessions',
 						connectionOptions: {
 							useNewUrlParser: true,

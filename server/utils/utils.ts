@@ -11,3 +11,12 @@ export const deNull = <R extends null | undefined | unknown, T = undefined>(
 	// @ts-ignore
 	return value ?? defaultValue;
 };
+
+export const createUriWithCollectionName = (uri: string, collectionName: string) => {
+	const encodedName = encodeURI(collectionName);
+
+	const regex = /(\bmongodb\+srv\b\S*\b.mongodb.net\/\b)([^\?]*)(\S*)/g;
+	const [, preCollection, , postCollection] = [...uri.matchAll(regex)][0];
+
+	return `${preCollection}${encodedName}${postCollection}`;
+};
