@@ -108,7 +108,7 @@ const anyNonFalsyUserResponse: Parameters<
 	// Mongoose Key
 	try {
 		console.clear();
-		if (dontReadKey(keys.mongooseKey)) throw 'Mongoose Key already present, Skipping ...';
+		if (dontReadKey('mongooseKey')) throw 'Mongoose Key already present, Skipping ...';
 
 		console.log(
 			'You can create a free Account here : (https://account.mongodb.com/account/login)'
@@ -124,7 +124,7 @@ const anyNonFalsyUserResponse: Parameters<
 
 	try {
 		console.clear();
-		if (dontReadKey(keys.mongoSessionCollectionName))
+		if (dontReadKey('mongoSessionCollectionName'))
 			throw 'Session Collection Name present, Skipping ...';
 
 		const [writeSessionName, sessionName] = await yesNoQuestion(
@@ -148,8 +148,7 @@ const anyNonFalsyUserResponse: Parameters<
 	// Google Keys
 	try {
 		console.clear();
-		if (dontReadKey(keys.googleSecret))
-			throw 'Google Secret already exists, Skipping ...';
+		if (dontReadKey('googleSecret')) throw 'Google Secret already exists, Skipping ...';
 
 		console.log(
 			'You can create an Google Application here : (https://console.developers.google.com/apis/credentials)'
@@ -165,7 +164,7 @@ const anyNonFalsyUserResponse: Parameters<
 
 	try {
 		console.clear();
-		if (dontReadKey(keys.googleKey)) throw 'Google Secret already exists, Skipping ...';
+		if (dontReadKey('googleKey')) throw 'Google Secret already exists, Skipping ...';
 
 		console.log(
 			'You can create an Google Application here : (https://console.developers.google.com/apis/credentials)'
@@ -184,7 +183,7 @@ const anyNonFalsyUserResponse: Parameters<
 
 	try {
 		console.clear();
-		if (dontReadKey(keys.sessionSecret)) throw 'Session Secret already set, Skipping ...';
+		if (dontReadKey('sessionSecret')) throw 'Session Secret already set, Skipping ...';
 
 		const [writeSessionSecret, sessionSecret] = await yesNoQuestion(
 			`Would you like to change the default cookie session secret (${keys.sessionSecret}) ?

@@ -7,10 +7,19 @@
 import { existsSync } from 'fs';
 import { dirname, join } from 'path';
 import { URL } from 'url';
-import { asyncProcess, useReadLine, createKeyFileString, parseHosts, setupSSLKey, } from '../utils/scriptUtils.js';
+import { asyncProcess, useReadLine, createKeyFileString, parseHosts, setupSSLKey, yesNoQuestion, } from '../utils/scriptUtils.js';
 import { writeFile, mkdir, readFile } from 'fs/promises';
 const __dirname = decodeURI(dirname(new URL(import.meta.url).pathname));
 const asyncReadLine = useReadLine(process.stdin, process.stdout);
+const emptyEqualVals = (key, obj1, obj2) => {
+    if (!obj1[key] && obj1[key] === obj2[key])
+        return true;
+    return false;
+};
+const anyNonFalsyUserResponse = userInput => {
+    const falsy = ['n', 'no', 'N', 'No'];
+    return [userInput.length > 0, !falsy.includes(userInput)];
+};
 (async () => {
     // ============================================
     // ===== Template Dependency Installation =====
@@ -50,53 +59,118 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
         if (existsSync(join(__dirname, '../server/keys/keys.ts')))
             throw 'Keyfile already exists';
         await mkdir(join(__dirname, '../server/keys'), { recursive: true });
-        const variables = {
-            mongooseKey: '',
-            googleSecret: '',
-            googleKey: '',
-            sessionSecret: '',
-        };
-        // Mongoose Key
-        try {
-            console.log('You can create a free Account here : (https://account.mongodb.com/account/login)');
-            variables.mongooseKey = await asyncReadLine('Please provide the connection URI for the MongoDB database (mongodb+srv://<Username>:<Password>@...) :');
-            console.clear();
-        }
-        catch (e) {
-            console.log('Failed to read mongooseKey');
-            console.error(e);
-        }
-        // Google Keys
-        try {
-            console.clear();
-            console.log('You can create an Google Application here : (https://console.developers.google.com/apis/credentials)');
-            variables.googleSecret = await asyncReadLine('Please provide the Google Secret for the Template:');
-            console.clear();
-            variables.googleKey = await asyncReadLine('Please provide the Google Key for for the Template:');
-            console.clear();
-        }
-        catch (e) {
-            console.log('Failed to read googleSecret or googleKey');
-            console.error(e);
-        }
-        // Session secret
-        try {
-            console.clear();
-            console.log('You can create a random key on this website, set the length to ~80 : (https://passwordsgenerator.net/)');
-            variables.sessionSecret = await asyncReadLine('Please Provide a key to encrypt the Imgur Clone Sessions with (any random string) :');
-            console.clear();
-        }
-        catch (e) {
-            console.log('Failed to read sessionSecret');
-            console.error(e);
-        }
-        console.log('Writing keys ...');
-        await writeFile(join(__dirname, '../server/keys/keys.ts'), createKeyFileString(variables));
-        console.log('Written key file.');
     }
     catch (e) {
         console.error('Could not create key file');
         console.error(e);
+    }
+    // default key values
+    const defaultKeys = {
+        mongooseKey: '',
+        mongoSessionCollectionName: 'sessions',
+        googleSecret: '',
+        googleKey: '',
+        sessionSecret: '1234',
+    };
+    // @ts-ignore
+    const imported_keys = await import('../server/keys/keys.js');
+    // @ts-ignore
+    const keys = {};
+    // Override empty / non existing keys with default values
+    for (const key in defaultKeys) {
+        const keyValue = imported_keys[key];
+        if (!keyValue)
+            keys[key] = defaultKeys[key];
+        keys[key] = keyValue;
+    }
+    const dontReadKey = (key) => !emptyEqualVals(key, keys, defaultKeys);
+    // Mongoose Key
+    try {
+        console.clear();
+        if (dontReadKey('mongooseKey'))
+            throw 'Mongoose Key already present, Skipping ...';
+        console.log('You can create a free Account here : (https://account.mongodb.com/account/login)');
+        keys.mongooseKey = await asyncReadLine('Please provide the connection URI for the MongoDB database (mongodb+srv://<Username>:<Password>@...) :');
+        console.clear();
+    }
+    catch (e) {
+        console.log('Failed to read mongooseKeys');
+        console.error(e);
+    }
+    try {
+        console.clear();
+        if (dontReadKey('mongoSessionCollectionName'))
+            throw 'Session Collection Name present, Skipping ...';
+        const [writeSessionName, sessionName] = await yesNoQuestion(`Would you like to change the default collection (${keys.mongoSessionCollectionName}) where your sessions are going to be stored under ?
+(n / typeInTheSessionCollectionName)`, asyncReadLine, {
+            ignoreDefaultValidation: true,
+            validateFn: anyNonFalsyUserResponse,
+        });
+        if (writeSessionName)
+            keys.mongoSessionCollectionName = sessionName;
+        console.clear();
+    }
+    catch (e) {
+        console.log('Failed to read Session Name');
+        console.error(e);
+    }
+    // Google Keys
+    try {
+        console.clear();
+        if (dontReadKey('googleSecret'))
+            throw 'Google Secret already exists, Skipping ...';
+        console.log('You can create an Google Application here : (https://console.developers.google.com/apis/credentials)');
+        keys.googleSecret = await asyncReadLine('Please provide the Google Secret for the Template:');
+    }
+    catch (e) {
+        console.log('Failed to read googleSecret');
+        console.error(e);
+    }
+    try {
+        console.clear();
+        if (dontReadKey('googleKey'))
+            throw 'Google Secret already exists, Skipping ...';
+        console.log('You can create an Google Application here : (https://console.developers.google.com/apis/credentials)');
+        keys.googleKey = await asyncReadLine('Please provide the Google Key for for the Template:');
+        console.clear();
+    }
+    catch (e) {
+        console.log('Failed to read googleKey');
+        console.error(e);
+    }
+    // Session secret
+    try {
+        console.clear();
+        if (dontReadKey('sessionSecret'))
+            throw 'Session Secret already set, Skipping ...';
+        const [writeSessionSecret, sessionSecret] = await yesNoQuestion(`Would you like to change the default cookie session secret (${keys.sessionSecret}) ?
+Any random string will do - you can create ono on this website (not recommended for production runs) : set the length to ~80 : (https://passwordsgenerator.net/)
+(n / pasteSessionSecret)
+`, asyncReadLine, { validateFn: anyNonFalsyUserResponse });
+        if (!writeSessionSecret)
+            throw 'Keeping default value.';
+        keys.sessionSecret = sessionSecret;
+        console.clear();
+    }
+    catch (e) {
+        console.log('Failed to update sessionSecret');
+        console.error(e);
+    }
+    try {
+        console.log('Writing key files ...');
+        const writtenFiles = await Promise.allSettled([
+            writeFile(join(__dirname, '../server/keys/keys.ts'), createKeyFileString(keys)),
+            writeFile(join(__dirname, '../server/keys/keys.js'), createKeyFileString(keys)),
+        ]);
+        for (const result of writtenFiles) {
+            if (result.status === 'rejected')
+                throw 'Failed to write a file';
+        }
+        console.log('Written key files.');
+    }
+    catch (e) {
+        console.error(e);
+        console.error('Could not write to key-file.');
     }
     // Write SSL Certificates
     try {
@@ -132,32 +206,13 @@ const asyncReadLine = useReadLine(process.stdin, process.stdout);
     // ======================================
     try {
         console.clear();
-        let inputCorrect = false;
-        let setupDevUrl = false;
-        do {
-            const createHostname = (await asyncReadLine(`Do you want to setup a custom development domain ? - This will only affect your local development environment.
+        const setupDevUrl = (await yesNoQuestion(`Do you want to setup a custom development domain ? - This will only affect your local development environment.
 
 For this to work you need to run this process as admin, if you didn't just exit the process and restart it with: 
 (linux : sudo node ./setup.js, windows: runas /user:”your_computer_name\administrator_name” node ./setup.js)
 
 (y/n)
-`)).trim();
-            switch (createHostname) {
-                case 'y':
-                case 'Y':
-                case 'Yes':
-                    inputCorrect = true;
-                    setupDevUrl = true;
-                    break;
-                case 'n':
-                case 'N':
-                case 'No':
-                    inputCorrect = true;
-                    break;
-                default:
-                    break;
-            }
-        } while (!inputCorrect);
+`, asyncReadLine))[0];
         if (!setupDevUrl)
             throw "User doesn't want to setup a dev url, dev url will be localhost";
         let hostsFile;
