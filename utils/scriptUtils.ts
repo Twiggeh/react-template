@@ -207,3 +207,6 @@ export const yesNoQuestion: YesNoQuestion = async (
 
 	return [userAgreed, userInput];
 };
+
+export const escapeRegex = (input: string) =>
+	input.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
