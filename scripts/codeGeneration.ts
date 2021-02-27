@@ -2,18 +2,19 @@ import { dirname, relative } from 'path';
 import { stat, readFile } from 'fs/promises';
 import { escapeRegex } from '../utils/scriptUtils.js';
 
-const injectionData: InjectionData = {
-	string: '__twig_generation',
-	startSignifier: '[',
-	stopSignifier: ']',
-};
-
-const extensionData: ExtensionData = {
-	string: '__twig_extension',
-	type: 'override',
-	startSignifier: '[',
-	stopSignifier: ']',
-};
+const codeGenData: [InjectionData, ExtensionData] = [
+	{
+		string: '__twig_generation',
+		startSignifier: '[',
+		stopSignifier: ']',
+	},
+	{
+		string: '__twig_extension',
+		type: 'override',
+		startSignifier: '[',
+		stopSignifier: ']',
+	},
+];
 
 const objectExtension = (
 	input: string,
@@ -71,7 +72,7 @@ const getRelativeImportPath: GetRelativeImportPath = (
 // Pass files and then automatically import from a registrar
 
 const processFiles = (directories: string[]) => {
-	const parseFile = async (filepath: string) => {
+	const processFile = async (filepath: string) => {
 		// does file exist
 		try {
 			await stat(filepath);
@@ -126,20 +127,39 @@ const processFiles = (directories: string[]) => {
 			// Create Regex out all injection / extension / etc data
 			const holdRegexData: [string, string[], string] = ['/**s*', [], 's**/'];
 
-			[injectionData, extensionData].forEach(
-				({ startSignifier, stopSignifier, string }) => {
-					holdRegexData[1].push(
-						`${escapeRegex(string + startSignifier)}(.*)${escapeRegex(stopSignifier)}`
-					);
-				}
-			);
+			codeGenData.forEach(({ startSignifier, stopSignifier, string }) => {
+				holdRegexData[1].push(
+					`${escapeRegex(string + startSignifier)}(.*)${escapeRegex(stopSignifier)}`
+				);
+			});
 
 			const injectExtendRegex = new RegExp(
-				`${holdRegexData[0]}(${holdRegexData[1].join('|')})${holdRegexData[1]}`,
+				`${escapeRegex(holdRegexData[0])}(?:${holdRegexData[1].join('|')})${escapeRegex(
+					holdRegexData[2]
+				)}`,
 				'g'
 			);
 
-			const matchedCodeChanges = file.matchAll(injectExtendRegex);
+			const runCodeGen = (file: string, codegenData: typeof codeGenData) => {
+				let fileToParse = file;
+
+				while (true) {
+					const result = injectExtendRegex.exec(fileToParse);
+					if (result === null) break;
+					const [matched, generation, injection] = result;
+
+					if (generation) {
+						const topPart = fileToParse.substr(0, result.index);
+						const botPart = fileToParse.substring(result.index + matched.length);
+
+						// TODO : fix plsGenMe to the correct input string
+						// fileToParse = topPart + plsGenMe + botPart;
+					}
+				}
+				return fileToParse;
+			};
+
+			const processedFile = runCodeGen(file, codeGenData);
 		} catch (error) {
 			console.error(error);
 		}
