@@ -125,8 +125,7 @@ const processFiles = (directories: string[]) => {
 			const injectExtendRegex = new RegExp(
 				`${escapeRegex(holdRegexData[0])}(?:${holdRegexData[1].join('|')})${escapeRegex(
 					holdRegexData[2]
-				)}`,
-				'g'
+				)}`
 			);
 
 			const runCodeGen = (file: string, codegenData: typeof codeGenData) => {
