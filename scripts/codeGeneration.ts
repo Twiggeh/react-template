@@ -172,6 +172,7 @@ export const useMongoDBSessions: CodeGenBlock<
 		],
 		injectionCode: [
 			{
+				requiredImports: ['named.yesNoQuestion'],
 				signifier: 'Setup Sessions',
 				code: `try {
       console.clear();
@@ -198,7 +199,7 @@ export const useMongoDBSessions: CodeGenBlock<
 `,
 			},
 			{
-				requiredImports: [''],
+				requiredImports: ['default.MongDBStoreConstructor'],
 				signifier: 'Mongoose Session',
 				code: `const MongoDBStore = MongoDBStoreConstructor(session);
 
@@ -229,7 +230,7 @@ app.use(
 		],
 		extensionCode: [
 			{
-				requiredImports: ['yesNoQuestion', scriptUtilsPath],
+				requiredImports: ['named.yesNoQuestion'],
 				signifier: 'Default Keys',
 				code: { mongoSessionCollectionName: 'sessions' },
 			},
@@ -237,18 +238,18 @@ app.use(
 	},
 ];
 
-type CodeGenBlock<Names, CodeGenType = string> = [
+type CodeGenBlock<CodeGenType = string> = [
 	{
 		requiredPackages?: string[];
 		injectionCode?: {
 			signifier: string;
 			code: string | CodeGenType;
-			requiredImports?: (Names | string)[];
+			requiredImports?: ImportPaths[];
 		}[];
 		extensionCode?: {
 			signifier: string;
 			code: Record<string, unknown>;
-			requiredImports?: (Names | string)[];
+			requiredImports?: ImportPaths[];
 		}[];
 	}
 ];
@@ -268,16 +269,11 @@ type ExtensionData = {
 
 type ToBeImported = { defaultImport: string } | { namedImport: string };
 
-type GetRelativeImportPath = <
-	T extends string & keyof typeof availableImports,
-	U extends string & keyof typeof availableImports[T]
->(
-	availableImportsPath: `${T}.${U}`,
+type ImportPaths<T extends 'named' | 'default' = 'named' | 'default'> = T extends 'named'
+	? `${T}.${string & keyof typeof availableImports['named']}`
+	: `${T}.${string & keyof typeof availableImports['default']}`;
+
+type GetRelativeImportPath = (
+	availableImportsPath: ImportPaths,
 	importIntoFilePath: string
 ) => [importPath: string, toBeImported: ToBeImported];
-
-type ExistingImports = [
-	defaultImport: string,
-	namedImports: string[],
-	importedFrom: string
-];
