@@ -63,10 +63,6 @@ const getRelativeImportPath: GetRelativeImportPath = (
 	];
 };
 
-// For each file
-//    process imports (pass file path, availableImport path)
-// Pass files and then automatically import from a registrar
-
 const processFiles = (directories: string[]) => {
 	const processFile = async (filepath: string) => {
 		// does file exist
@@ -95,30 +91,27 @@ const processFiles = (directories: string[]) => {
 			const importRegex = /import\s*(\S* as \w*|\w*),?\s*(?:\{([\w\s,]*)\})?\s*from\s*["'](.*)["'][\n;]/g;
 			const file = (await readFile(filepath)).toString();
 
-			// TODO: Not sure whether the allExistingImports array is useful, replace map with forEach if it isn't
-			const allExistingImports: ExistingImports[] = [
-				...file.matchAll(importRegex),
-			].map<ExistingImports>(([, defaultImport, namedImports, importedFrom]) => {
-				// get all named imports
-				const parsedNamedImports = namedImports
-					.split(',')
-					.map(namedImport => namedImport.trim());
+			[...file.matchAll(importRegex)].forEach(
+				([, defaultImport, namedImports, importedFrom]) => {
+					// get all named imports
+					const parsedNamedImports = namedImports
+						.split(',')
+						.map(namedImport => namedImport.trim());
 
-				// populate the imports section of fileData
-				if (defaultImport) {
-					if (fileData.imports.defaultImports[defaultImport])
-						throw `duplicate default import: ${defaultImport}`;
-					fileData.imports.defaultImports[defaultImport] = importedFrom;
-				}
-				if (namedImports)
-					for (const namedImport of parsedNamedImports) {
-						if (fileData.imports.namedImports[namedImport])
-							throw `duplicate named import: ${defaultImport}`;
-						fileData.imports.namedImports[namedImport] = importedFrom;
+					// populate the imports section of fileData
+					if (defaultImport) {
+						if (fileData.imports.defaultImports[defaultImport])
+							throw `duplicate default import: ${defaultImport}`;
+						fileData.imports.defaultImports[defaultImport] = importedFrom;
 					}
-
-				return [defaultImport, parsedNamedImports, importedFrom];
-			});
+					if (namedImports)
+						for (const namedImport of parsedNamedImports) {
+							if (fileData.imports.namedImports[namedImport])
+								throw `duplicate named import: ${defaultImport}`;
+							fileData.imports.namedImports[namedImport] = importedFrom;
+						}
+				}
+			);
 
 			// Create Regex out all injection / extension / etc data
 			const holdRegexData: [string, string[], string] = ['/**s*', [], 's**/'];
