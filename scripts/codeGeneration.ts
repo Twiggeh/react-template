@@ -16,12 +16,6 @@ const codeGenData: [InjectionData, ExtensionData] = [
 	},
 ];
 
-const objectExtension = (
-	input: string,
-	data: Record<string, unknown>,
-	searcher: ExtensionData
-) => {};
-
 const __dirname = decodeURI(dirname(new URL(import.meta.url).pathname));
 
 const appPath = '../server/src/app.js';
