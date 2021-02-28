@@ -21,6 +21,7 @@ const __dirname = decodeURI(dirname(new URL(import.meta.url).pathname));
 const appPath = '../server/src/app.js';
 const keyPath = '../server/keys/keys.js';
 const scriptUtilsPath = '../utils/scriptUtils.js';
+const serverUtils = '../server/utils/utils.js';
 
 const availableImports = {
 	default: {
@@ -32,6 +33,7 @@ const availableImports = {
 		sessionSecret: keyPath,
 		mongoSessionCollectionName: keyPath,
 		yesNoQuestion: scriptUtilsPath,
+		createUriWithCollectionName: serverUtils,
 	},
 };
 
