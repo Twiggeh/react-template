@@ -227,6 +227,8 @@ app.use(
 `,
 			},
 		],
+	},
+	{
 		extensionCode: [
 			{
 				requiredImports: ['named.yesNoQuestion'],
@@ -237,21 +239,19 @@ app.use(
 	},
 ];
 
-type CodeGenBlock<CodeGenType = string> = [
-	{
-		requiredPackages?: string[];
-		injectionCode?: {
-			signifier: string;
-			code: string | CodeGenType;
-			requiredImports?: ImportPaths[];
-		}[];
-		extensionCode?: {
-			signifier: string;
-			code: Record<string, unknown>;
-			requiredImports?: ImportPaths[];
-		}[];
-	}
-];
+type CodeGenBlock = {
+	requiredPackages?: string[];
+	injectionCode?: {
+		signifier: string;
+		code: string;
+		requiredImports?: ImportPaths[];
+	}[];
+	extensionCode?: {
+		signifier: string;
+		code: Record<string, unknown>;
+		requiredImports?: ImportPaths[];
+	}[];
+}[];
 
 type InjectionData = {
 	string: string;
