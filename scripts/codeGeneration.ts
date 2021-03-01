@@ -159,9 +159,7 @@ const processFiles = (directories: string[]) => {
 
 getRelativeImportPath('default.session', 'hell');
 
-export const useMongoDBSessions: CodeGenBlock<
-	'yesNoQuestion' | 'session, { MemoryStore }' | 'MongoDBStoreConstructor'
-> = [
+var useMongoDBSessions: CodeGenBlock = [
 	{
 		requiredPackages: [
 			'express-session',
