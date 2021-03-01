@@ -2,6 +2,31 @@ import { dirname, relative } from 'path';
 import { stat, readFile } from 'fs/promises';
 import { escapeRegex } from '../utils/scriptUtils.js';
 
+const signifierKeyedGenBlocks = (selectedGenBlocks: SelectedGenBlocks) => {
+	const result: {
+		extension: Record<string, CodeGenBlock[]>;
+		injection: Record<string, CodeGenBlock[]>;
+	} = {
+		extension: {},
+		injection: {},
+	};
+
+	for (const selectedGenBlock of selectedGenBlocks) {
+		for (const codeGenBlock of selectedGenBlock) {
+			for (const type of ['injection', 'extension']) {
+				for (const code of codeGenBlock[`${type}Code`]) {
+					if (result[type][code.signifier]) {
+						result[type][code.signifier].push(code);
+					}
+					result[type][code.signifier] = [code];
+				}
+			}
+		}
+	}
+
+	return result;
+};
+
 const codeGenData: [InjectionData, ExtensionData] = [
 	{
 		string: '__twig_generation',
