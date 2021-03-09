@@ -5,7 +5,7 @@ require('dotenv').config();
 const mode = process.env.NODE_ENV;
 const analyze = process.env.ANALYZE;
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
@@ -29,8 +29,8 @@ module.exports = {
 	output: {
 		path: path.resolve(__dirname, '../dist'),
 		publicPath: '/',
-		filename: 'public/js/[name]-[contentHash:8].js',
-		chunkFilename: 'public/js/[name]-[contentHash:8].chunk.js',
+		filename: 'public/js/[name]-[contenthash:8].js',
+		chunkFilename: 'public/js/[name]-[contenthash:8].chunk.js',
 	},
 	mode: 'production',
 	module: {
@@ -114,7 +114,7 @@ module.exports = {
 				use: {
 					loader: 'file-loader',
 					options: {
-						name: '[name]-[contentHash:8].[ext]',
+						name: '[name]-[contenthash:8].[ext]',
 						outputPath: 'public/images/',
 					},
 				},
@@ -124,7 +124,7 @@ module.exports = {
 				use: {
 					loader: 'file-loader',
 					options: {
-						name: '[name]-[contentHash:8].[ext]',
+						name: '[name]-[contenthash:8].[ext]',
 						outputPath: 'public/gif/',
 					},
 				},
@@ -134,7 +134,7 @@ module.exports = {
 				use: {
 					loader: 'file-loader',
 					options: {
-						name: '[name]-[contentHash:8].[ext]',
+						name: '[name]-[contenthash:8].[ext]',
 						outputPath: 'public/video/',
 					},
 				},
@@ -144,7 +144,7 @@ module.exports = {
 				use: {
 					loader: 'file-loader',
 					options: {
-						name: '[contentHash:3]-[name].[ext]',
+						name: '[contenthash:3]-[name].[ext]',
 						outputPath: 'public/pdf/',
 					},
 				},
@@ -176,7 +176,7 @@ module.exports = {
 		extensions: ['.ts', '.tsx', '.js', '.jsx'],
 	},
 	optimization: {
-		minimizer: [new OptimizeCssAssetsPlugin()],
+		minimizer: [new OptimizeCssAssetsPlugin(), new TerserPlugin()],
 		splitChunks: {
 			cacheGroups: {
 				vendor: {
@@ -188,7 +188,6 @@ module.exports = {
 			},
 		},
 	},
-	node: { curProcess: true, __filename: true }, // to get correct curProcess and __filename
 	// prettier-ignore
 	plugins: [
 		analyze === 'true'
