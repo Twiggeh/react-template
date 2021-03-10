@@ -8,7 +8,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+// const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const webpack = require('webpack');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -44,19 +44,32 @@ module.exports = {
 						options: {
 							presets: [
 								'@babel/preset-env',
-								'@babel/react',
-								'@emotion/babel-preset-css-prop',
+								[
+									'@babel/preset-react',
+									{ runtime: 'automatic', importSource: '@emotion/react' },
+								],
 							],
 							// don't inject babel code into each file, create a global import for them
-							plugins: ['@babel/plugin-transform-runtime'],
+							plugins: ['@emotion/babel-plugin', '@babel/plugin-transform-runtime'],
 							compact: false,
 							cacheDirectory: false,
 							cacheCompression: false,
-							sourceMaps: false,
-							inputSourceMap: false,
+							sourceMaps: true,
+							inputSourceMap: true,
 						},
 					},
-					{ loader: 'ts-loader' },
+					{
+						loader: 'ts-loader',
+						options: {
+							compilerOptions: {
+								target: 'esnext',
+								module: 'esnext',
+								react: 'preserve',
+								lib: ['dom', 'dom.iterable', 'esnext'],
+								transpileOnly: true,
+							},
+						},
+					},
 				],
 			},
 			{
@@ -82,12 +95,13 @@ module.exports = {
 			{
 				test: /\.css$/i,
 				use: [
-					{
-						loader: MiniCssExtractPlugin.loader,
-						options: {
-							publicPath: '../../',
-						},
-					},
+					// {
+					// 	loader: MiniCssExtractPlugin.loader,
+					// 	options: {
+					// 		publicPath: '../../',
+					// 	},
+					// },
+					'style-loader',
 					{
 						loader: 'css-loader',
 						options: {
@@ -99,55 +113,30 @@ module.exports = {
 			{
 				// eslint-disable-next-line security/detect-unsafe-regex
 				test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
-				use: [
-					{
-						loader: 'file-loader',
-						options: {
-							name: '[name].[ext]',
-							outputPath: 'public/fonts/',
-						},
-					},
-				],
+				type: 'asset/resource',
+				generator: {
+					filename: 'public/fonts/[name].[ext]',
+				},
 			},
 			{
 				test: /\.(jpg|jpeg|png|webp)?$/,
-				use: {
-					loader: 'file-loader',
-					options: {
-						name: '[name]-[contenthash:8].[ext]',
-						outputPath: 'public/images/',
-					},
-				},
+				type: 'asset',
+				generator: { filename: 'public/images/[name]-[contenthash:8].[ext]' },
 			},
 			{
 				test: /\.gif?$/,
-				use: {
-					loader: 'file-loader',
-					options: {
-						name: '[name]-[contenthash:8].[ext]',
-						outputPath: 'public/gif/',
-					},
-				},
+				type: 'asset',
+				generator: { filename: 'public/gif/[name]-[contenthash:8].[ext]' },
 			},
 			{
 				test: /\.m4v?$/,
-				use: {
-					loader: 'file-loader',
-					options: {
-						name: '[name]-[contenthash:8].[ext]',
-						outputPath: 'public/video/',
-					},
-				},
+				type: 'asset',
+				generator: { filename: 'public/video/[name]-[contenthash:8].[ext]' },
 			},
 			{
 				test: /\.pdf$/,
-				use: {
-					loader: 'file-loader',
-					options: {
-						name: '[contenthash:3]-[name].[ext]',
-						outputPath: 'public/pdf/',
-					},
-				},
+				type: 'asset',
+				generator: { filename: 'public/pdf/[contenthash:3]-[name].[ext]' },
 			},
 			{
 				test: /\.svg$/,
@@ -176,18 +165,12 @@ module.exports = {
 		extensions: ['.ts', '.tsx', '.js', '.jsx'],
 	},
 	optimization: {
-		minimizer: [new OptimizeCssAssetsPlugin(), new TerserPlugin()],
+		minimizer: [/*new OptimizeCssAssetsPlugin(),*/ new TerserPlugin()],
 		splitChunks: {
-			cacheGroups: {
-				vendor: {
-					chunks: 'initial',
-					test: 'vendor',
-					name: 'vendor',
-					enforce: true,
-				},
-			},
+			chunks: 'all',
 		},
 	},
+	experiments: { asyncWebAssembly: true },
 	// prettier-ignore
 	plugins: [
 		analyze === 'true'
@@ -195,13 +178,10 @@ module.exports = {
 				analyzerMode: 'server',
 			})
 			: false,
-		// Find a new minifier, uglify js doesn't support es6 syntax, which is what ts compiles down to
-		// alternatively set a different js version with babel
-		//new UglifyJSPlugin(),
-		new MiniCssExtractPlugin({
-			filename: 'public/css/[name]-[contenthash:8].css',
-			chunkFilename: 'public/css/[name]-[contenthash:8].chunk.css',
-		}),
+		// new MiniCssExtractPlugin({
+		// 	filename: 'public/css/[name]-[contenthash:8].css',
+		// 	chunkFilename: 'public/css/[name]-[contenthash:8].chunk.css',
+		// }),
 		new HtmlWebpackPlugin({
 			template: path.resolve(__dirname, '../src/index.html'),
 			filename: 'index.html',

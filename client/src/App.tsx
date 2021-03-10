@@ -12,6 +12,7 @@ import { createUploadLink } from 'apollo-upload-client';
 import Counter from './components/Counter';
 import SettingsCtx, { useSettings } from './components/providers/settingsCtx';
 import { allThemes } from './static/Themes';
+import { SmallFox } from './static/Images';
 
 const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
 	cache: new InMemoryCache(),
@@ -32,6 +33,7 @@ const App = () => {
 					<SettingsCtx.Provider value={{ settings, settingsDispatch }}>
 						<Counter />
 						<div>Hello there</div>
+						<img src={SmallFox} />
 					</SettingsCtx.Provider>
 				</ThemeProvider>
 			</ApolloProvider>
