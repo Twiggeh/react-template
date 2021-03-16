@@ -4,8 +4,8 @@ import { escapeRegex } from '../utils/scriptUtils.js';
 
 const signifierKeyedGenBlocks = (selectedGenBlocks: SelectedGenBlocks) => {
 	const result: {
-		extension: Record<string, CodeGenBlock[]>;
-		injection: Record<string, CodeGenBlock[]>;
+		extension: Record<string, ExtensionCode[]>;
+		injection: Record<string, InjectionCode[]>;
 	} = {
 		extension: {},
 		injection: {},
@@ -182,7 +182,9 @@ const processFiles = (directories: string[]) => {
 	}
 };
 
-getRelativeImportPath('default.session', 'hell');
+type SelectedGenBlocks = CodeGenBlock[];
+
+var selectedGenBlocks: SelectedGenBlocks = [useMongoDBSessions];
 
 var useMongoDBSessions: CodeGenBlock = [
 	{
@@ -262,18 +264,21 @@ app.use(
 	},
 ];
 
+type InjectionCode = {
+	signifier: string;
+	code: string;
+	requiredImports?: ImportPaths[];
+};
+type ExtensionCode = {
+	signifier: string;
+	code: Record<string, unknown>;
+	requiredImports?: ImportPaths[];
+};
+
 type CodeGenBlock = {
 	requiredPackages?: string[];
-	injectionCode?: {
-		signifier: string;
-		code: string;
-		requiredImports?: ImportPaths[];
-	}[];
-	extensionCode?: {
-		signifier: string;
-		code: Record<string, unknown>;
-		requiredImports?: ImportPaths[];
-	}[];
+	injectionCode?: InjectionCode[];
+	extensionCode?: ExtensionCode[];
 }[];
 
 type InjectionData = {
